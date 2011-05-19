@@ -17,8 +17,8 @@ import edu.wpi.first.wpilibj.Victor;
 import edu.wpi.first.wpilibj.Jaguar;
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.RobotDrive;
+import edu.wpi.first.wpilibj.Solenoid;
 import edu.wpi.first.wpilibj.winnovation.motions.Motion;
-import java.util.Vector;
 
 /**
  * The VM is configured to automatically run this class, and to call the
@@ -45,12 +45,18 @@ public class MyRobot extends IterativeRobot {
     private SpeedController rDriveCim1;
     private SpeedController rDriveCim2;
 
+    private Solenoid lobster;
+    private Solenoid gearbox;
+
     private Compressor compressor;
 
     private Localizer localizer;
 
     private Motion[] autonDriveMotions;
     private int autonState;
+
+    private boolean lobsterButtonReleased = true;
+    private boolean gearButtonReleased = true;
 
 
     /**
@@ -69,6 +75,9 @@ public class MyRobot extends IterativeRobot {
         rEncoder = new Encoder(Constants.RightDriveEncoderAlphaCh,
                 Constants.RightDriveEncoderBetaCh, true, Encoder.EncodingType.k4X);
         gyro = new Gyro(Constants.GyroSlot, Constants.GyroCh);
+
+
+        // speed controllers
         if(Constants.isPracticeBot) {
             lDriveCim1 = new Victor(Constants.LeftDriveCim1Slot, Constants.LeftDriveCim1Ch);
             lDriveCim2 = new Victor(Constants.LeftDriveCim2Slot, Constants.LeftDriveCim2Ch);
@@ -80,6 +89,10 @@ public class MyRobot extends IterativeRobot {
             rDriveCim1 = new Jaguar(Constants.RightDriveCim1Slot, Constants.RightDriveCim1Ch);
             rDriveCim2 = new Jaguar(Constants.RightDriveCim2Slot, Constants.RightDriveCim2Ch);
         }
+
+        // solenoids
+        lobster = new Solenoid(Constants.LobsterSlot, Constants.LobsterCh);
+        gearbox = new Solenoid(Constants.GearboxSlot, Constants.GearboxCh);
 
         compressor = new Compressor(Constants.PressureSwitchSlot, Constants.PressureSwitchCh,
                 Constants.CompressorRelaySlot, Constants.CompressorRelayCh);
@@ -138,6 +151,22 @@ public class MyRobot extends IterativeRobot {
     public void teleopPeriodic() {
         
         robotDrive.tankDrive(leftJoystick, rightJoystick);
+
+        // toggle lobsters
+        if(leftJoystick.getButton(Constants.LobsterButton) && lobsterButtonReleased) {
+           lobsterButtonReleased = false;
+           lobster.set(!lobster.get());
+        } else if(!leftJoystick.getButton(Constants.LobsterButton)) {
+            lobsterButtonReleased = true;
+        }
+
+        // switch gears
+        if(rightJoystick.getButton(Constants.GearboxButton) && gearButtonReleased) {
+           gearButtonReleased = false;
+           gearbox.set(!gearbox.get());
+        } else if(!rightJoystick.getButton(Constants.GearboxButton)) {
+            gearButtonReleased = true;
+        }
 
     }
     

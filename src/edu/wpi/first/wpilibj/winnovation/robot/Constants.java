@@ -5,6 +5,8 @@
 
 package edu.wpi.first.wpilibj.winnovation.robot;
 
+import edu.wpi.first.wpilibj.Joystick;
+
 /**
  *
  * @author Chris
@@ -47,6 +49,13 @@ public class Constants {
     public static final int RightDriveCim2Ch = 0;
     public static final int RightDriveCim2Slot = 0;
 
+    // solenoids
+    public static final int LobsterSlot = 0;
+    public static final int LobsterCh = 0;
+    public static final int GearboxSlot = 0;
+    public static final int GearboxCh = 0;
+
+
     // drive
     public static double MaxDriveSpeed = 12.0;
 
@@ -56,6 +65,11 @@ public class Constants {
 
     // encoders
     public static double EncoderTicksPerRev = 360;
+
+
+    // Controls
+    public static Joystick.ButtonType LobsterButton = Joystick.ButtonType.kTrigger;
+    public static Joystick.ButtonType GearboxButton = Joystick.ButtonType.kTrigger;
 
 
 }
