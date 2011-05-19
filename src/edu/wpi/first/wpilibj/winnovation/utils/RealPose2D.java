@@ -353,7 +353,7 @@ public class RealPose2D extends AffineTransform {
 	 */
 	public String toString()
         {
-            return "getTranslateX()" + "," + getTranslateY() + "," + getRotateTheta();
+            return getTranslateX() + "," + getTranslateY() + "," + getRotateTheta();
 	}
 
 	/**
@@ -362,6 +362,6 @@ public class RealPose2D extends AffineTransform {
 	 */
 	public String serialize()
 	{
-		return "getTranslateX()" + "," + getTranslateY() + "," + getRotateTheta();
+		return getTranslateX() + "," + getTranslateY() + "," + getRotateTheta();
 	}
 }
