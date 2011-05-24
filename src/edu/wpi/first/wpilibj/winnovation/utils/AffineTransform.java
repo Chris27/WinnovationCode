@@ -25,10 +25,9 @@ package edu.wpi.first.wpilibj.winnovation.utils;
 
 //import java.awt.Shape;
 
-import java.io.Serializable;
 
 
-public class AffineTransform implements Serializable {
+public class AffineTransform {
 
     private static final long serialVersionUID = 1330973210523860834L;
 

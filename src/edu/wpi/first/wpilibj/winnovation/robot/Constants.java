@@ -24,30 +24,30 @@ public class Constants {
 
 
     // sensors
-    public static final int LeftDriveEncoderAlphaCh = 0;
-    public static final int LeftDriveEncoderBetaCh = 0;
-    public static final int RightDriveEncoderAlphaCh = 0;
-    public static final int RightDriveEncoderBetaCh = 0;
-    public static final int GyroSlot = 0;
-    public static final int GyroCh = 0;
+    public static final int LeftDriveEncoderAlphaCh = 7;
+    public static final int LeftDriveEncoderBetaCh = 8;
+    public static final int RightDriveEncoderAlphaCh = 9;
+    public static final int RightDriveEncoderBetaCh = 10;
+    public static final int GyroSlot = 1;
+    public static final int GyroCh = 2;
 
     // switches
 
     // controls
-    public static final int LeftJoystickPort = 0;
-    public static final int RightJoystickPort = 0;
+    public static final int LeftJoystickPort = 1;
+    public static final int RightJoystickPort = 2;
 
     // speed controllers
 
     // drive motors
-    public static final int LeftDriveCim1Ch = 0;
-    public static final int LeftDriveCim1Slot = 0;
-    public static final int LeftDriveCim2Ch = 0;
-    public static final int LeftDriveCim2Slot = 0;
-    public static final int RightDriveCim1Ch = 0;
-    public static final int RightDriveCim1Slot = 0;
-    public static final int RightDriveCim2Ch = 0;
-    public static final int RightDriveCim2Slot = 0;
+    public static final int LeftDriveCim1Ch = 4;
+    public static final int LeftDriveCim1Slot = 6;
+    public static final int LeftDriveCim2Ch = 5;
+    public static final int LeftDriveCim2Slot = 6;
+    public static final int RightDriveCim1Ch = 1;
+    public static final int RightDriveCim1Slot = 6;
+    public static final int RightDriveCim2Ch = 2;
+    public static final int RightDriveCim2Slot = 6;
 
     // solenoids
     public static final int LobsterSlot = 0;
@@ -60,8 +60,9 @@ public class Constants {
     public static double MaxDriveSpeed = 12.0;
 
     // dimensions
-    public static double WheelBaseRadius = 26.0/12.0;
-    public static double WheelRadius = 4.0;
+    public static double WheelBaseRadius = 25.75/(12.0*2.0);
+    public static double WheelRadius = 1.75/12.0;
+    public static double LobsterWheelRadius = 1.75/12.0;
 
     // encoders
     public static double EncoderTicksPerRev = 360;

@@ -74,15 +74,15 @@ public class MyRobot extends IterativeRobot {
                 Constants.LeftDriveEncoderBetaCh, false, Encoder.EncodingType.k4X);
         rEncoder = new Encoder(Constants.RightDriveEncoderAlphaCh,
                 Constants.RightDriveEncoderBetaCh, true, Encoder.EncodingType.k4X);
-        gyro = new Gyro(Constants.GyroSlot, Constants.GyroCh);
+        gyro = new Gyro(/*Constants.GyroSlot,*/ Constants.GyroCh);
 
 
         // speed controllers
         if(Constants.isPracticeBot) {
-            lDriveCim1 = new Victor(Constants.LeftDriveCim1Slot, Constants.LeftDriveCim1Ch);
-            lDriveCim2 = new Victor(Constants.LeftDriveCim2Slot, Constants.LeftDriveCim2Ch);
-            rDriveCim1 = new Victor(Constants.RightDriveCim1Slot, Constants.RightDriveCim1Ch);
-            rDriveCim2 = new Victor(Constants.RightDriveCim2Slot, Constants.RightDriveCim2Ch);
+            lDriveCim1 = new Victor(/*Constants.LeftDriveCim1Slot,*/ Constants.LeftDriveCim1Ch);
+            lDriveCim2 = new Victor(/*Constants.LeftDriveCim2Slot,*/ Constants.LeftDriveCim2Ch);
+            rDriveCim1 = new Victor(/*Constants.RightDriveCim1Slot,*/ Constants.RightDriveCim1Ch);
+            rDriveCim2 = new Victor(/*Constants.RightDriveCim2Slot,*/ Constants.RightDriveCim2Ch);
         } else {
             lDriveCim1 = new Jaguar(Constants.LeftDriveCim1Slot, Constants.LeftDriveCim1Ch);
             lDriveCim2 = new Jaguar(Constants.LeftDriveCim2Slot, Constants.LeftDriveCim2Ch);
@@ -91,12 +91,12 @@ public class MyRobot extends IterativeRobot {
         }
 
         // solenoids
-        lobster = new Solenoid(Constants.LobsterSlot, Constants.LobsterCh);
+        /*lobster = new Solenoid(Constants.LobsterSlot, Constants.LobsterCh);
         gearbox = new Solenoid(Constants.GearboxSlot, Constants.GearboxCh);
 
         compressor = new Compressor(Constants.PressureSwitchSlot, Constants.PressureSwitchCh,
                 Constants.CompressorRelaySlot, Constants.CompressorRelayCh);
-        
+        */
         robotDrive = new RobotDrive(lDriveCim1, lDriveCim2, rDriveCim1, rDriveCim2);
         getWatchdog().setEnabled(false);
 
@@ -105,11 +105,11 @@ public class MyRobot extends IterativeRobot {
 
     public void autonomousInit() {
         super.autonomousInit();
-        localizer = new Localizer(gyro, lEncoder, rEncoder);
+        /*localizer = new Localizer(gyro, lEncoder, rEncoder);
         compressor.start();
 
         autonDriveMotions = new Motion[0];
-        autonState = 0;
+        autonState = 0;*/
 
     }
 
@@ -137,7 +137,8 @@ public class MyRobot extends IterativeRobot {
         super.teleopInit();
         if(localizer == null)
             localizer = new Localizer(gyro, lEncoder, rEncoder);
-        compressor.start();
+        //compressor.start();
+        System.out.println("Teleop initialized");
     }
 
     public void teleopContinuous() {
@@ -152,6 +153,7 @@ public class MyRobot extends IterativeRobot {
         
         robotDrive.tankDrive(leftJoystick, rightJoystick);
 
+        /*
         // toggle lobsters
         if(leftJoystick.getButton(Constants.LobsterButton) && lobsterButtonReleased) {
            lobsterButtonReleased = false;
@@ -166,7 +168,7 @@ public class MyRobot extends IterativeRobot {
            gearbox.set(!gearbox.get());
         } else if(!rightJoystick.getButton(Constants.GearboxButton)) {
             gearButtonReleased = true;
-        }
+        }*/
 
     }
     

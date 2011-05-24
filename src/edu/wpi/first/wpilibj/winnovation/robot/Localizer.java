@@ -3,6 +3,7 @@ package edu.wpi.first.wpilibj.winnovation.robot;
 
 import edu.wpi.first.wpilibj.Encoder;
 import edu.wpi.first.wpilibj.Gyro;
+import edu.wpi.first.wpilibj.SmartDashboard;
 
 /**
  *
@@ -132,6 +133,16 @@ public class Localizer {
         lDist = lEncoder.getDistance();
         rDist = rEncoder.getDistance();
         time = curTime;
+
+        // log stuff
+        SmartDashboard.log(lEncoder.getDistance(), "lEncoder");
+        SmartDashboard.log(rEncoder.getDistance(), "rEncoder");
+        SmartDashboard.log(gyro.getAngle(), "gyro");
+        SmartDashboard.log(x, "x (ft)");
+        SmartDashboard.log(y, "y (ft)");
+        SmartDashboard.log(th, "heading (deg)");
+        SmartDashboard.log(v, "lin speed (ft/s)");
+        SmartDashboard.log(w*180.0/Math.PI, "rot speed (deg/s)");
     }
 
 
