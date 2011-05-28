@@ -17,8 +17,12 @@ import edu.wpi.first.wpilibj.Victor;
 import edu.wpi.first.wpilibj.Jaguar;
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.RobotDrive;
+import edu.wpi.first.wpilibj.SmartDashboard;
 import edu.wpi.first.wpilibj.Solenoid;
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.winnovation.motions.Motion;
+import edu.wpi.first.wpilibj.winnovation.utils.FixedGyro;
+
 
 /**
  * The VM is configured to automatically run this class, and to call the
@@ -71,23 +75,28 @@ public class MyRobot extends IterativeRobot {
 
         // init sensors
         lEncoder = new Encoder(Constants.LeftDriveEncoderAlphaCh,
-                Constants.LeftDriveEncoderBetaCh, false, Encoder.EncodingType.k4X);
+                Constants.LeftDriveEncoderBetaCh, true, Encoder.EncodingType.k1X);
         rEncoder = new Encoder(Constants.RightDriveEncoderAlphaCh,
-                Constants.RightDriveEncoderBetaCh, true, Encoder.EncodingType.k4X);
-        gyro = new Gyro(/*Constants.GyroSlot,*/ Constants.GyroCh);
+                Constants.RightDriveEncoderBetaCh, true, Encoder.EncodingType.k1X);
+        lEncoder.setDistancePerPulse(Constants.LeftDriveDistancePerPulse);
+        rEncoder.setDistancePerPulse(Constants.RightDriveDistancePerPulse);
+        lEncoder.start();
+        rEncoder.start();
+
+        gyro = new FixedGyro(Constants.GyroCh);
 
 
         // speed controllers
-        if(Constants.isPracticeBot) {
-            lDriveCim1 = new Victor(/*Constants.LeftDriveCim1Slot,*/ Constants.LeftDriveCim1Ch);
-            lDriveCim2 = new Victor(/*Constants.LeftDriveCim2Slot,*/ Constants.LeftDriveCim2Ch);
-            rDriveCim1 = new Victor(/*Constants.RightDriveCim1Slot,*/ Constants.RightDriveCim1Ch);
-            rDriveCim2 = new Victor(/*Constants.RightDriveCim2Slot,*/ Constants.RightDriveCim2Ch);
+        if(Constants.IsPracticeBot) {
+            lDriveCim1 = new Victor(Constants.LeftDriveCim1Ch);
+            lDriveCim2 = new Victor(Constants.LeftDriveCim2Ch);
+            rDriveCim1 = new Victor(Constants.RightDriveCim1Ch);
+            rDriveCim2 = new Victor(Constants.RightDriveCim2Ch);
         } else {
-            lDriveCim1 = new Jaguar(Constants.LeftDriveCim1Slot, Constants.LeftDriveCim1Ch);
-            lDriveCim2 = new Jaguar(Constants.LeftDriveCim2Slot, Constants.LeftDriveCim2Ch);
-            rDriveCim1 = new Jaguar(Constants.RightDriveCim1Slot, Constants.RightDriveCim1Ch);
-            rDriveCim2 = new Jaguar(Constants.RightDriveCim2Slot, Constants.RightDriveCim2Ch);
+            lDriveCim1 = new Jaguar(Constants.LeftDriveCim1Ch);
+            lDriveCim2 = new Jaguar(Constants.LeftDriveCim2Ch);
+            rDriveCim1 = new Jaguar(Constants.RightDriveCim1Ch);
+            rDriveCim2 = new Jaguar(Constants.RightDriveCim2Ch);
         }
 
         // solenoids
@@ -97,7 +106,8 @@ public class MyRobot extends IterativeRobot {
         compressor = new Compressor(Constants.PressureSwitchSlot, Constants.PressureSwitchCh,
                 Constants.CompressorRelaySlot, Constants.CompressorRelayCh);
         */
-        robotDrive = new RobotDrive(lDriveCim1, lDriveCim2, rDriveCim1, rDriveCim2);
+        
+        robotDrive = new PIDRobotDrive(lEncoder, rEncoder, lDriveCim1, lDriveCim2, rDriveCim1, rDriveCim2);
         getWatchdog().setEnabled(false);
 
     }
@@ -105,8 +115,9 @@ public class MyRobot extends IterativeRobot {
 
     public void autonomousInit() {
         super.autonomousInit();
-        /*localizer = new Localizer(gyro, lEncoder, rEncoder);
-        compressor.start();
+        localizer = new Localizer(gyro, lEncoder, rEncoder);
+        localizer.reset();
+        /*compressor.start();
 
         autonDriveMotions = new Motion[0];
         autonState = 0;*/
@@ -116,6 +127,7 @@ public class MyRobot extends IterativeRobot {
     public void autonomousContinuous() {
         super.autonomousContinuous();
         localizer.update();
+        Timer.delay(Constants.ContinuousInterval);
     }
 
 
@@ -129,7 +141,7 @@ public class MyRobot extends IterativeRobot {
             if(autonDriveMotions[autonState].isDone())
                 autonState++;
         }
-
+        Timer.delay(Constants.PeriodicInterval);
     }
 
 
@@ -137,13 +149,14 @@ public class MyRobot extends IterativeRobot {
         super.teleopInit();
         if(localizer == null)
             localizer = new Localizer(gyro, lEncoder, rEncoder);
+        localizer.reset();
         //compressor.start();
-        System.out.println("Teleop initialized");
     }
 
     public void teleopContinuous() {
         super.teleopContinuous();
         localizer.update();
+        Timer.delay(Constants.ContinuousInterval);
     }
 
     /**
@@ -151,7 +164,7 @@ public class MyRobot extends IterativeRobot {
      */
     public void teleopPeriodic() {
         
-        robotDrive.tankDrive(leftJoystick, rightJoystick);
+       robotDrive.tankDrive(leftJoystick, rightJoystick);
 
         /*
         // toggle lobsters
@@ -169,6 +182,7 @@ public class MyRobot extends IterativeRobot {
         } else if(!rightJoystick.getButton(Constants.GearboxButton)) {
             gearButtonReleased = true;
         }*/
+        Timer.delay(Constants.PeriodicInterval);
 
     }
     

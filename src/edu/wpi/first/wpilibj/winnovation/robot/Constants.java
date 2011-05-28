@@ -14,7 +14,12 @@ import edu.wpi.first.wpilibj.Joystick;
 public class Constants {
     
     // misc
-    public static final boolean isPracticeBot = true;
+    public static final boolean IsPracticeBot = true;
+    public static final boolean UseGyro = false;
+
+    // intervals code runs at
+    public static final double ContinuousInterval = 0.01; // seconds
+    public static final double PeriodicInterval = 0.01; // seconds
 
     // compressor
     public static final int PressureSwitchSlot = 0;
@@ -24,11 +29,10 @@ public class Constants {
 
 
     // sensors
-    public static final int LeftDriveEncoderAlphaCh = 7;
-    public static final int LeftDriveEncoderBetaCh = 8;
-    public static final int RightDriveEncoderAlphaCh = 9;
-    public static final int RightDriveEncoderBetaCh = 10;
-    public static final int GyroSlot = 1;
+    public static final int LeftDriveEncoderAlphaCh = 3;
+    public static final int LeftDriveEncoderBetaCh = 4;
+    public static final int RightDriveEncoderAlphaCh = 1;
+    public static final int RightDriveEncoderBetaCh = 2;
     public static final int GyroCh = 2;
 
     // switches
@@ -41,13 +45,13 @@ public class Constants {
 
     // drive motors
     public static final int LeftDriveCim1Ch = 4;
-    public static final int LeftDriveCim1Slot = 6;
+    //public static final int LeftDriveCim1Slot = 6;
     public static final int LeftDriveCim2Ch = 5;
-    public static final int LeftDriveCim2Slot = 6;
+    //public static final int LeftDriveCim2Slot = 6;
     public static final int RightDriveCim1Ch = 1;
-    public static final int RightDriveCim1Slot = 6;
+    //public static final int RightDriveCim1Slot = 6;
     public static final int RightDriveCim2Ch = 2;
-    public static final int RightDriveCim2Slot = 6;
+    //public static final int RightDriveCim2Slot = 6;
 
     // solenoids
     public static final int LobsterSlot = 0;
@@ -57,15 +61,22 @@ public class Constants {
 
 
     // drive
-    public static double MaxDriveSpeed = 12.0;
+    public static double MaxDriveSpeed = 13.0;
+    public static double MinDriveSpeed = 0.2;
+    public static double LeftDriveDistancePerPulse = 0.0086528; // feet per encoder tick
+    public static double RightDriveDistancePerPulse = 0.0068988; // feet per encoder tick
+    
 
     // dimensions
-    public static double WheelBaseRadius = 25.75/(12.0*2.0);
-    public static double WheelRadius = 1.75/12.0;
-    public static double LobsterWheelRadius = 1.75/12.0;
+    public static double WheelBaseWidth = 24.75/12.0;
+    //public static double WheelRadius = 1.75/12.0;
+    //public static double LobsterWheelRadius = 1.75/12.0;
+
+
+
 
     // encoders
-    public static double EncoderTicksPerRev = 360;
+    //public static double EncoderTicksPerRev = 360;
 
 
     // Controls

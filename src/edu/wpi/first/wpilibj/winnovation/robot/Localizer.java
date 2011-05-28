@@ -15,14 +15,14 @@ public class Localizer {
     private Encoder lEncoder;
     private Encoder rEncoder;
 
-    private double x;
-    private double y;
-    private double th;
-    private double lDist;
-    private double rDist;
-    private double thVel;
-    private double lVel;
-    private double rVel;
+    private double x; // ft
+    private double y; // ft
+    private double th; // rad
+    private double lDist; // ft
+    private double rDist; // ft
+    private double thVel; //rad/sec
+    private double lVel;  // ft/s
+    private double rVel;  // ft/s
     
     private long time;
 
@@ -99,50 +99,80 @@ public class Localizer {
      *
      * @param isLobstered
      */
-    public void update(/*boolean isLobstered*/) {
+    public synchronized void update(/*boolean isLobstered*/) {
 
         /*
         // lobstering adds a 90 degree rotation
         double offset = isLobstered ? Math.PI/2.0 : 0;*/
 
         long curTime = System.currentTimeMillis();
-        double delT = (curTime - time)/1000; // seconds since last update()
+        double delT = ((double)(curTime - time))/1000.0; // seconds since last update()
 
         // update current velocities
-        lVel = (lEncoder.getDistance() - lDist)/delT;
+        lVel = (lEncoder.getDistance() - lDist)/delT; // because encoder getRate() seems to be broken...
         rVel = (rEncoder.getDistance() - rDist)/delT;
-        thVel = (gyro.getAngle() - th)/delT;
-        double w = thVel*(Math.PI/180.0); // convert to radians as expected by Java trig functions
-        double thRad = th*(Math.PI/180.0);
+        if(Constants.UseGyro)
+            thVel = (gyro.getAngle()*Math.PI/180.0 - th)/delT; // gyro is off...
+        else
+            thVel = (rVel - lVel) / (Constants.WheelBaseWidth);
+
+
+
+
+        double w = thVel; // convert to radians as expected by Java trig functions
         double v = (lVel + rVel)/2.0;
 
         // integrate velocities uses 4th order Runge-Kutta to get position
-        double k00 = v*Math.cos(thRad);
-        double k01 = v*Math.sin(thRad);
-        double k10 = v*Math.cos(thRad + delT/2.0*w);
-        double k11 = v*Math.sin(thRad + delT/2.0*w);
-        double k20 = v*Math.cos(thRad + delT/2.0*w);
-        double k21 = v*Math.sin(thRad + delT/2.0*w);
-        double k30 = v*Math.cos(thRad + delT*w);
-        double k31 = v*Math.sin(thRad + delT*w);
+        double k00 = v*Math.cos(th);
+        double k01 = v*Math.sin(th);
+        double k02 = w;
+        double k10 = v*Math.cos(th + delT/2.0*w);
+        double k11 = v*Math.sin(th + delT/2.0*w);
+        double k12 = w;
+        double k20 = v*Math.cos(th + delT/2.0*w);
+        double k21 = v*Math.sin(th + delT/2.0*w);
+        double k22 = w;
+        double k30 = v*Math.cos(th + delT*w);
+        double k31 = v*Math.sin(th + delT*w);
+        double k32 = w;
 
         x = x + delT/6.0*(k00 + 2.0*(k10+k20) + k30);
         y = y + delT/6.0*(k01 + 2.0*(k11+k21) + k31);
-        th = gyro.getAngle();
+        if(Constants.UseGyro)
+            th = gyro.getAngle();
+        else
+            th = th + (delT/6.0*(k02 + 2.0*(k12+k22) + k32));
 
         lDist = lEncoder.getDistance();
         rDist = rEncoder.getDistance();
         time = curTime;
 
         // log stuff
-        SmartDashboard.log(lEncoder.getDistance(), "lEncoder");
-        SmartDashboard.log(rEncoder.getDistance(), "rEncoder");
+        SmartDashboard.log(lEncoder.getDistance(), "lEncoder (ft)");
+        SmartDashboard.log(rEncoder.getDistance(), "rEncoder (ft)");
+        SmartDashboard.log(lVel, "lVel (ft/s)");
+        SmartDashboard.log(rVel, "rVel (ft/s)");
         SmartDashboard.log(gyro.getAngle(), "gyro");
         SmartDashboard.log(x, "x (ft)");
         SmartDashboard.log(y, "y (ft)");
-        SmartDashboard.log(th, "heading (deg)");
+        SmartDashboard.log(th*180.0/Math.PI, "heading (deg)");
         SmartDashboard.log(v, "lin speed (ft/s)");
         SmartDashboard.log(w*180.0/Math.PI, "rot speed (deg/s)");
+        SmartDashboard.log(delT, "delT");
+    }
+
+    public synchronized void reset() {
+        lEncoder.reset();
+        rEncoder.reset();
+        gyro.reset();
+        x = 0;
+        y = 0;
+        th = 0;
+        lDist = 0;
+        rDist = 0;
+        lVel = 0;
+        rVel = 0;
+        thVel = 0;
     }
 
 
