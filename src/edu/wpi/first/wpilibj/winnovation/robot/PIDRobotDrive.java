@@ -26,9 +26,9 @@ public class PIDRobotDrive extends RobotDrive {
     
 
     // PID constants
-    private double Kp = 0.070*18; // constants on right multipliers account for
-    private double Ki = 0.005*9; // the robot being on carpet
-    private double Kd = 0.016*15;
+    private double Kp = 0.070;//*18; // constants on right multipliers account for
+    private double Ki = 0.005;//*9; // the robot being on carpet
+    private double Kd = 0.016;//*15;
 
 
 

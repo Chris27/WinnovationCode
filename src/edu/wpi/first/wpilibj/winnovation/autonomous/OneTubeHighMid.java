@@ -5,13 +5,25 @@
 
 package edu.wpi.first.wpilibj.winnovation.autonomous;
 
+
 /**
  *
  * @author Chris
  */
-public class OneTubeHighMid implements AutonomousMode{
+public class OneTubeHighMid extends AutonomousMode{
 
-    public void run() {
+    public OneTubeHighMid() {
+        super();
+
+        // drive
+
+        // straight to rack
+
+        //
+
+
+        // auxiliary
 
     }
+
 }

@@ -10,11 +10,11 @@ package edu.wpi.first.wpilibj.winnovation.motions;
  * @author Chris
  */
 
-// does nothing, plan to use to synchronize drive train and auxilary motions
+// does nothing, plan to use to synchronize drive train and auxiliary motions
 public class SynchronizeMotion implements Motion {
 
     public boolean isDone() {
-        return true;
+        return false;
     }
 
     public void doMotion() {

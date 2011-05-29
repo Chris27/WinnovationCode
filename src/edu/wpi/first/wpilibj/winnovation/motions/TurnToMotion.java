@@ -5,12 +5,12 @@
 
 package edu.wpi.first.wpilibj.winnovation.motions;
 
-import edu.wpi.first.wpilibj.PIDController;
-import edu.wpi.first.wpilibj.PIDOutput;
-import edu.wpi.first.wpilibj.PIDSource;
 import edu.wpi.first.wpilibj.RobotDrive;
+import edu.wpi.first.wpilibj.SmartDashboard;
+import edu.wpi.first.wpilibj.winnovation.robot.Constants;
 import edu.wpi.first.wpilibj.winnovation.robot.Localizer;
 import edu.wpi.first.wpilibj.winnovation.utils.Angle;
+import edu.wpi.first.wpilibj.winnovation.utils.ThreadlessPID;
 
 /**
  *
@@ -19,12 +19,17 @@ import edu.wpi.first.wpilibj.winnovation.utils.Angle;
 public class TurnToMotion implements Motion {
 
     private boolean done;
-    private PIDController controller;
+    private ThreadlessPID pid;
+    private RobotDrive robotDrive;
+    private Localizer localizer;
+    private double target; // radians
+
+    private final double ErrorThresh = 2.0*Math.PI/180.0; // accept 2 degrees of error
 
     // PID params
-    private double Kp = 1.0;
-    private double Ki = 0.0;
-    private double Kd = 0.0;
+    private final double Kp = 0.6;
+    private final double Ki = 0.0;
+    private final double Kd = 0.0;
 
 
     /**
@@ -34,12 +39,15 @@ public class TurnToMotion implements Motion {
      */
     public TurnToMotion(RobotDrive robotDrive, Localizer localizer, double heading) {
         done = false;
-        controller = new PIDController(Kp, Ki, Kd, new PIDIn(localizer, heading), new PIDOut(robotDrive));
-        controller.setContinuous();
-        controller.setOutputRange(-1.0, 1.0);
-        controller.setInputRange(-180, 180);
-        controller.setSetpoint(heading);
-        controller.setTolerance(0.1);
+        pid = new ThreadlessPID(Kp, Ki, Kd);
+        pid.setContinuous();
+        pid.setOutputRange(-1.0, 1.0);
+        pid.setInputRange(-Math.PI, Math.PI);
+        pid.setSetpoint(0);
+        this.robotDrive = robotDrive;
+        this.localizer = localizer;
+        this.target = Angle.normalize(heading*Math.PI/180.0);
+         // not really needed?
     }
 
     public boolean isDone() {
@@ -47,47 +55,69 @@ public class TurnToMotion implements Motion {
     }
 
     public void doMotion() {
-        if(!controller.isEnable()) {
-            controller.enable();
+
+        double curHeading = Angle.normalize(localizer.getTh());
+        //boolean goCC = (target - curHeading) < Math.PI;
+        double dif = target - curHeading;
+        double error;
+
+        if (dif > 0) {
+            if (dif < Math.PI) {
+                error = dif;
+            } else {
+                error = -1 * (2 * Math.PI - dif);
+            }
+        } else {
+            if (Math.abs(dif) > Math.PI) {
+                error = 2 * Math.PI + dif;
+            } else {
+                error = dif;
+            }
         }
-        else if(controller.onTarget()) {
-            done = true;
-            controller.disable();
-        }
+
+        double speed = pid.calculate(error);
+
+//        if(Math.abs(pid.getError()) < ErrorThresh) {
+//            abort();
+//        }
+//        else {
+            SmartDashboard.log(speed, "rotate at speed");
+            robotDrive.tankDrive(-speed, speed);
+//        }
     }
     
     public void abort() {
-        controller.disable();
         done = true;
+        robotDrive.tankDrive(0,0);
     }
 
-    private class PIDOut implements PIDOutput {
-
-        private RobotDrive robotDrive;
-
-        public PIDOut(RobotDrive robotDrive) {
-            this.robotDrive = robotDrive;
-        }
-
-        public void pidWrite(double output) {
-            robotDrive.tankDrive(-1*output, output);
-        }
-    }
-
-    private class PIDIn implements PIDSource {
-
-        private Localizer localizer;
-        private double target;
-
-        public PIDIn(Localizer localizer, double target) {
-            this.localizer = localizer;
-            this.target = target;
-        }
-
-        public double pidGet() {
-            return Angle.normalizeDeg(localizer.getTh());
-        }
-
-    }
+//    private class PIDOut implements PIDOutput {
+//
+//        private RobotDrive robotDrive;
+//
+//        public PIDOut(RobotDrive robotDrive) {
+//            this.robotDrive = robotDrive;
+//        }
+//
+//        public void pidWrite(double output) {
+//            robotDrive.tankDrive(-1*output, output);
+//        }
+//    }
+//
+//    private class PIDIn implements PIDSource {
+//
+//        private Localizer localizer;
+//        private double target;
+//
+//        public PIDIn(Localizer localizer, double target) {
+//            this.localizer = localizer;
+//            this.target = target;
+//        }
+//
+//        public double pidGet() {
+//            return Angle.normalizeDeg(localizer.getTh());
+//        }
+//
+//    }
 
 }

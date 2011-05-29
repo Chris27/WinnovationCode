@@ -9,10 +9,11 @@ package edu.wpi.first.wpilibj.winnovation.autonomous;
  *
  * @author Chris
  */
-public class DoNothing implements AutonomousMode{
-
-    public void run() {
-        // does nothing
+public class DoNothing extends AutonomousMode{
+    
+    // does nothing
+    public DoNothing() {
+        super();
     }
-
+   
 }

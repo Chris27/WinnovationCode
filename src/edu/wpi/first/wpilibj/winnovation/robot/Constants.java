@@ -60,18 +60,17 @@ public class Constants {
     public static final int GearboxCh = 0;
 
 
-    // drive
-    public static double MaxDriveSpeed = 13.0;
-    public static double MinDriveSpeed = 0.2;
-    public static double LeftDriveDistancePerPulse = 0.0086528; // feet per encoder tick
-    public static double RightDriveDistancePerPulse = 0.0068988; // feet per encoder tick
+        // drive
+    public static final double MaxDriveSpeed = 13.0; // ft/s
+    public static final double MinDriveSpeed = 0.7; // ft/s
+    public static final double LeftDriveDistancePerPulse = 0.0086528; // feet per encoder tick
+    public static final double RightDriveDistancePerPulse = 0.0068988; // feet per encoder tick
     
 
     // dimensions
-    public static double WheelBaseWidth = 24.75/12.0;
+    public static final double WheelBaseWidth = 24.75/12.0; // distance between the left and right wheels (ft)
     //public static double WheelRadius = 1.75/12.0;
     //public static double LobsterWheelRadius = 1.75/12.0;
-
 
 
 
@@ -80,8 +79,8 @@ public class Constants {
 
 
     // Controls
-    public static Joystick.ButtonType LobsterButton = Joystick.ButtonType.kTrigger;
-    public static Joystick.ButtonType GearboxButton = Joystick.ButtonType.kTrigger;
+    public static final Joystick.ButtonType LobsterButton = Joystick.ButtonType.kTrigger;
+    public static final Joystick.ButtonType GearboxButton = Joystick.ButtonType.kTrigger;
 
 
 }

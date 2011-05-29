@@ -9,10 +9,14 @@ package edu.wpi.first.wpilibj.winnovation.autonomous;
  *
  * @author Chris
  */
-public class OneTubeHighSide implements AutonomousMode{
+public class OneTubeHighSide extends AutonomousMode{
 
+    public OneTubeHighSide() {
+        super();
 
-    public void run() {
+        // drive
+
+        // auxiliary
 
     }
 

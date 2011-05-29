@@ -13,7 +13,6 @@ import edu.wpi.first.wpilibj.Encoder;
 import edu.wpi.first.wpilibj.Gyro;
 import edu.wpi.first.wpilibj.IterativeRobot;
 import edu.wpi.first.wpilibj.SpeedController;
-import edu.wpi.first.wpilibj.Victor;
 import edu.wpi.first.wpilibj.Jaguar;
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.RobotDrive;
@@ -21,7 +20,9 @@ import edu.wpi.first.wpilibj.SmartDashboard;
 import edu.wpi.first.wpilibj.Solenoid;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.winnovation.motions.Motion;
+import edu.wpi.first.wpilibj.winnovation.motions.TurnToMotion;
 import edu.wpi.first.wpilibj.winnovation.utils.FixedGyro;
+import edu.wpi.first.wpilibj.winnovation.utils.LinearVictor;
 
 
 /**
@@ -56,8 +57,6 @@ public class MyRobot extends IterativeRobot {
 
     private Localizer localizer;
 
-    private Motion[] autonDriveMotions;
-    private int autonState;
 
     private boolean lobsterButtonReleased = true;
     private boolean gearButtonReleased = true;
@@ -88,10 +87,10 @@ public class MyRobot extends IterativeRobot {
 
         // speed controllers
         if(Constants.IsPracticeBot) {
-            lDriveCim1 = new Victor(Constants.LeftDriveCim1Ch);
-            lDriveCim2 = new Victor(Constants.LeftDriveCim2Ch);
-            rDriveCim1 = new Victor(Constants.RightDriveCim1Ch);
-            rDriveCim2 = new Victor(Constants.RightDriveCim2Ch);
+            lDriveCim1 = new LinearVictor(Constants.LeftDriveCim1Ch);
+            lDriveCim2 = new LinearVictor(Constants.LeftDriveCim2Ch);
+            rDriveCim1 = new LinearVictor(Constants.RightDriveCim1Ch);
+            rDriveCim2 = new LinearVictor(Constants.RightDriveCim2Ch);
         } else {
             lDriveCim1 = new Jaguar(Constants.LeftDriveCim1Ch);
             lDriveCim2 = new Jaguar(Constants.LeftDriveCim2Ch);
@@ -107,16 +106,20 @@ public class MyRobot extends IterativeRobot {
                 Constants.CompressorRelaySlot, Constants.CompressorRelayCh);
         */
         
-        robotDrive = new PIDRobotDrive(lEncoder, rEncoder, lDriveCim1, lDriveCim2, rDriveCim1, rDriveCim2);
         getWatchdog().setEnabled(false);
 
     }
 
 
+    private Motion testMotion;
+
     public void autonomousInit() {
         super.autonomousInit();
         localizer = new Localizer(gyro, lEncoder, rEncoder);
         localizer.reset();
+        robotDrive = new RobotDrive(lDriveCim1, lDriveCim2, rDriveCim1, rDriveCim2);
+        testMotion = new TurnToMotion(robotDrive, localizer, 60.0);
+
         /*compressor.start();
 
         autonDriveMotions = new Motion[0];
@@ -136,20 +139,29 @@ public class MyRobot extends IterativeRobot {
      */
     public void autonomousPeriodic() {
 
-        if(autonState < autonDriveMotions.length) {
-            autonDriveMotions[autonState].doMotion();
-            if(autonDriveMotions[autonState].isDone())
-                autonState++;
+        
+
+        if(testMotion != null) {
+            testMotion.doMotion();
+            SmartDashboard.log(testMotion.isDone(), "test motion");
         }
         Timer.delay(Constants.PeriodicInterval);
+
     }
 
 
     public void teleopInit() {
         super.teleopInit();
-        if(localizer == null)
+        if(localizer == null) {
             localizer = new Localizer(gyro, lEncoder, rEncoder);
-        localizer.reset();
+            localizer.reset();
+            robotDrive = new PIDRobotDrive(localizer, lDriveCim1, lDriveCim2, rDriveCim1, rDriveCim2);
+        }
+
+        // make sure auton is dead
+        if(testMotion != null)
+            testMotion.abort();
+        
         //compressor.start();
     }
 

@@ -57,7 +57,7 @@ public class Localizer {
     }
 
     /**
-     * @return heading in degrees [0,360)  (x-axis has heading 0)
+     * @return heading in radians  (x-axis has heading 0)
      */
     public double getTh() {
 
@@ -87,7 +87,7 @@ public class Localizer {
 
 
     /**
-     * @return angular velocity in degrees/second (counter-clockwise is +)
+     * @return angular velocity in radians/second (counter-clockwise is +)
      */
     public double getThVel() {
         return thVel;
@@ -99,11 +99,7 @@ public class Localizer {
      *
      * @param isLobstered
      */
-    public synchronized void update(/*boolean isLobstered*/) {
-
-        /*
-        // lobstering adds a 90 degree rotation
-        double offset = isLobstered ? Math.PI/2.0 : 0;*/
+    public synchronized void update() {
 
         long curTime = System.currentTimeMillis();
         double delT = ((double)(curTime - time))/1000.0; // seconds since last update()
