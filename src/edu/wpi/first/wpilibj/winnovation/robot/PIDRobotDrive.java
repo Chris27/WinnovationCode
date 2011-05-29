@@ -1,12 +1,10 @@
 package edu.wpi.first.wpilibj.winnovation.robot;
 
-import edu.wpi.first.wpilibj.Encoder;
 import edu.wpi.first.wpilibj.GenericHID;
-import edu.wpi.first.wpilibj.PIDController;
-import edu.wpi.first.wpilibj.PIDOutput;
-import edu.wpi.first.wpilibj.PIDSource;
 import edu.wpi.first.wpilibj.RobotDrive;
+import edu.wpi.first.wpilibj.SmartDashboard;
 import edu.wpi.first.wpilibj.SpeedController;
+import edu.wpi.first.wpilibj.winnovation.utils.ThreadlessPID;
 /**
  *
  * uses PID to enforce actual robot velocity
@@ -15,100 +13,99 @@ import edu.wpi.first.wpilibj.SpeedController;
  */
 public class PIDRobotDrive extends RobotDrive {
 
-    private static final boolean LEFT = true;
-    private static final boolean RIGHT = false;
+//    private static final boolean LEFT = true;
+//    private static final boolean RIGHT = false;
 
-    private PIDController lController;
-    private PIDController rController;
-    private Wheels leftWheels;
-    private Wheels rightWheels;
+    private ThreadlessPID lController;
+    private ThreadlessPID rController;
+    private SpeedController lCim1;
+    private SpeedController lCim2;
+    private SpeedController rCim1;
+    private SpeedController rCim2;
+    private Localizer localizer;
     
 
     // PID constants
-    private double Kp = 1.0;
-    private double Ki = 0.0;
-    private double Kd = 0.0;
+    private double Kp = 0.070*18; // constants on right multipliers account for
+    private double Ki = 0.005*9; // the robot being on carpet
+    private double Kd = 0.016*15;
 
 
-    public PIDRobotDrive(Encoder lEncoder, Encoder rEncoder,
+
+    public PIDRobotDrive(Localizer localizer,
             SpeedController lCim1, SpeedController lCim2, SpeedController rCim1,
             SpeedController rCim2) {
 
         super(lCim1, lCim2, rCim1, rCim2);
-        leftWheels = new Wheels(lEncoder, LEFT, lCim1, lCim2);
-        rightWheels = new Wheels(rEncoder, RIGHT, rCim1, rCim2);
+        this.lCim1 = lCim1;
+        this.lCim2 = lCim2;
+        this.rCim1 = rCim1;
+        this.rCim2 = rCim2;
+        this.localizer = localizer;
 
-        lController = new PIDController(Kp, Ki, Kd, leftWheels, leftWheels);
-        rController = new PIDController(Kp, Ki, Kd, rightWheels, rightWheels);
+        lController = new ThreadlessPID(Kp, Ki, Kd);
+        rController = new ThreadlessPID(Kp, Ki, Kd);
 
-        lController.setInputRange(-Constants.MaxDriveSpeed, Constants.MaxDriveSpeed);
-        lController.setOutputRange(-1.0, 1.0);
-        rController.setInputRange(-Constants.MaxDriveSpeed, Constants.MaxDriveSpeed);
-        rController.setOutputRange(-1.0, 1.0);
+        lController.setInputRange(-0.25*Constants.MaxDriveSpeed, 0.25*Constants.MaxDriveSpeed);
+        lController.setOutputRange(-0.75, 0.75);
+        rController.setInputRange(-0.25*Constants.MaxDriveSpeed, 0.25*Constants.MaxDriveSpeed);
+        rController.setOutputRange(-0.75, 0.75);
         lController.setSetpoint(0);
         rController.setSetpoint(0);
-
-        lController.enable();
-        rController.enable();
-
-       
         
     }
+    
+    private double cap(double val) {
+        if(val > 1)
+            val = 1;
+        else if(val < -1)
+            val = -1;
+        return val;
+    }
+
 
     public void tankDrive(GenericHID leftStick, GenericHID rightStick) {
         double leftVel = -leftStick.getY()*Constants.MaxDriveSpeed;
         double rightVel = -rightStick.getY()*Constants.MaxDriveSpeed;
 
-        // deadzone
-        if(Math.abs(leftVel) < Constants.MinDriveSpeed)
-            leftVel = 0;
-        if(Math.abs(rightVel) < Constants.MinDriveSpeed)
-            rightVel = 0;
-
         this.tankDrive(leftVel, rightVel);
     }
 
     public void tankDrive(double leftVel, double rightVel) {
-        lController.setSetpoint(leftVel);
-        rController.setSetpoint(rightVel);
+
+        double leftOut = leftVel/Constants.MaxDriveSpeed;
+        double rightOut = -rightVel/Constants.MaxDriveSpeed;
+
+        double leftError = leftVel - localizer.getLVel();
+        double rightError = rightVel - localizer.getRVel();
+        double leftCorrection = lController.calculate(leftError);
+        double rightCorrection = -rController.calculate(rightError);
+
+        leftOut = cap(leftOut + leftCorrection);
+        rightOut = cap(rightOut + rightCorrection);
+
+         // deadzone
+        if(Math.abs(leftVel) < Constants.MinDriveSpeed)
+            leftOut = 0;
+        if(Math.abs(rightVel) < Constants.MinDriveSpeed)
+            rightOut = 0;
+  
+        lCim1.set(leftOut);
+        lCim2.set(leftOut);
+        rCim1.set(rightOut);
+        rCim2.set(rightOut);
+
+        SmartDashboard.log(leftVel, "desired left ft/s");
+        SmartDashboard.log(rightVel, "desired right ft/s");
+        SmartDashboard.log(lCim1.get(), "left cim ouput");
+        SmartDashboard.log(rCim1.get(), "right cim output");
+        SmartDashboard.log(leftCorrection, "left correction");
+        SmartDashboard.log(rightCorrection, "right correction");
     }
 
     public void drive(double vel, double curve) {
         tankDrive(vel - curve*vel*Constants.WheelBaseWidth/2.0, vel + curve*vel*Constants.WheelBaseWidth/2.0);
     }
 
-    private class Wheels implements PIDSource, PIDOutput {
-
-        private SpeedController cim1;
-        private SpeedController cim2;
-        private Encoder encoder;
-        private double prevDist = 0;
-        private long prevTime = System.currentTimeMillis();
-
-        public Wheels(Encoder encoder, boolean side, SpeedController cim1, SpeedController cim2) {
-            this.encoder = encoder;
-            this.cim1 = cim1;
-            this.cim2 = cim2;
-        }
-
-        public double pidGet() {
-            // I would just use the getRate function of the encoder but the wpi
-            // code is currently broken
-            long curTime = System.currentTimeMillis();
-            double curDist = encoder.getDistance();
-            double delT = ((double) (curTime - prevTime))/1000.0;
-            double v = delT != 0 ? (curDist - prevDist)/delT : 0;
-            prevTime = curTime;
-            prevDist = curDist;
-            return v;
-        }
-
-        public void pidWrite(double output) {
-            cim1.set(output);
-            cim2.set(output);
-        }
-
-
-    }
 
 }
