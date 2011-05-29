@@ -4,8 +4,10 @@ package edu.wpi.first.wpilibj.winnovation.robot;
 import edu.wpi.first.wpilibj.Encoder;
 import edu.wpi.first.wpilibj.Gyro;
 import edu.wpi.first.wpilibj.SmartDashboard;
+import edu.wpi.first.wpilibj.winnovation.utils.Angle;
 
 /**
+ * Keeps track of the position and velocity of the robot
  *
  * @author Chris
  */
@@ -107,10 +109,10 @@ public class Localizer {
         // update current velocities
         lVel = (lEncoder.getDistance() - lDist)/delT; // because encoder getRate() seems to be broken...
         rVel = (rEncoder.getDistance() - rDist)/delT;
-        if(Constants.UseGyro)
+        if(Constants.USE_GYRO)
             thVel = (gyro.getAngle()*Math.PI/180.0 - th)/delT; // gyro is off...
         else
-            thVel = (rVel - lVel) / (Constants.WheelBaseWidth);
+            thVel = (rVel - lVel) / (Constants.WHEEL_BASE_WIDTH);
 
 
 
@@ -134,7 +136,7 @@ public class Localizer {
 
         x = x + delT/6.0*(k00 + 2.0*(k10+k20) + k30);
         y = y + delT/6.0*(k01 + 2.0*(k11+k21) + k31);
-        if(Constants.UseGyro)
+        if(Constants.USE_GYRO)
             th = gyro.getAngle();
         else
             th = th + (delT/6.0*(k02 + 2.0*(k12+k22) + k32));
@@ -151,7 +153,7 @@ public class Localizer {
         SmartDashboard.log(gyro.getAngle(), "gyro");
         SmartDashboard.log(x, "x (ft)");
         SmartDashboard.log(y, "y (ft)");
-        SmartDashboard.log(th*180.0/Math.PI, "heading (deg)");
+        SmartDashboard.log(Angle.normalizeDeg(th*180.0/Math.PI), "heading (deg)");
         SmartDashboard.log(v, "lin speed (ft/s)");
         SmartDashboard.log(w*180.0/Math.PI, "rot speed (deg/s)");
         SmartDashboard.log(delT, "delT");

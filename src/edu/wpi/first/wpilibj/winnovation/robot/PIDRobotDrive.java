@@ -6,15 +6,11 @@ import edu.wpi.first.wpilibj.SmartDashboard;
 import edu.wpi.first.wpilibj.SpeedController;
 import edu.wpi.first.wpilibj.winnovation.utils.ThreadlessPID;
 /**
- *
- * uses PID to enforce actual robot velocity
+ * Extends RobotDrive to accept velocity as input instead of power
  *
  * @author Chris
  */
 public class PIDRobotDrive extends RobotDrive {
-
-//    private static final boolean LEFT = true;
-//    private static final boolean RIGHT = false;
 
     private ThreadlessPID lController;
     private ThreadlessPID rController;
@@ -26,9 +22,9 @@ public class PIDRobotDrive extends RobotDrive {
     
 
     // PID constants
-    private double Kp = 0.070;//*18; // constants on right multipliers account for
-    private double Ki = 0.005;//*9; // the robot being on carpet
-    private double Kd = 0.016;//*15;
+    private double Kp = 0.070*18; // constants on right multipliers account for
+    private double Ki = 0.005*9; // the robot being on carpet
+    private double Kd = 0.016*15;
 
 
 
@@ -46,9 +42,9 @@ public class PIDRobotDrive extends RobotDrive {
         lController = new ThreadlessPID(Kp, Ki, Kd);
         rController = new ThreadlessPID(Kp, Ki, Kd);
 
-        lController.setInputRange(-0.25*Constants.MaxDriveSpeed, 0.25*Constants.MaxDriveSpeed);
+        lController.setInputRange(-0.25*Constants.MAX_DRIVE_SPEED, 0.25*Constants.MAX_DRIVE_SPEED);
         lController.setOutputRange(-0.75, 0.75);
-        rController.setInputRange(-0.25*Constants.MaxDriveSpeed, 0.25*Constants.MaxDriveSpeed);
+        rController.setInputRange(-0.25*Constants.MAX_DRIVE_SPEED, 0.25*Constants.MAX_DRIVE_SPEED);
         rController.setOutputRange(-0.75, 0.75);
         lController.setSetpoint(0);
         rController.setSetpoint(0);
@@ -65,16 +61,25 @@ public class PIDRobotDrive extends RobotDrive {
 
 
     public void tankDrive(GenericHID leftStick, GenericHID rightStick) {
-        double leftVel = -leftStick.getY()*Constants.MaxDriveSpeed;
-        double rightVel = -rightStick.getY()*Constants.MaxDriveSpeed;
 
-        this.tankDrive(leftVel, rightVel);
+        this.tankDrive(-leftStick.getY(), -rightStick.getY());
     }
 
-    public void tankDrive(double leftVel, double rightVel) {
+    public void tankDrive(double lVal, double rVal) {
+        double leftVel = -lVal*Constants.MAX_DRIVE_SPEED;
+        double rightVel = -rVal*Constants.MAX_DRIVE_SPEED;
+        tankDriveAtVelocity(leftVel, rightVel);
+    }
 
-        double leftOut = leftVel/Constants.MaxDriveSpeed;
-        double rightOut = -rightVel/Constants.MaxDriveSpeed;
+    /**
+     *
+     * @param leftVel linear velocity of left wheels
+     * @param rightVel linear velocity of right wheels
+     */
+    public void tankDriveAtVelocity(double leftVel, double rightVel) {
+
+        double leftOut = leftVel/Constants.MAX_DRIVE_SPEED;
+        double rightOut = -rightVel/Constants.MAX_DRIVE_SPEED;
 
         double leftError = leftVel - localizer.getLVel();
         double rightError = rightVel - localizer.getRVel();
@@ -85,9 +90,9 @@ public class PIDRobotDrive extends RobotDrive {
         rightOut = cap(rightOut + rightCorrection);
 
          // deadzone
-        if(Math.abs(leftVel) < Constants.MinDriveSpeed)
+        if(Math.abs(leftVel) < Constants.MIN_DRIVE_SPEED)
             leftOut = 0;
-        if(Math.abs(rightVel) < Constants.MinDriveSpeed)
+        if(Math.abs(rightVel) < Constants.MIN_DRIVE_SPEED)
             rightOut = 0;
   
         lCim1.set(leftOut);
@@ -104,7 +109,7 @@ public class PIDRobotDrive extends RobotDrive {
     }
 
     public void drive(double vel, double curve) {
-        tankDrive(vel - curve*vel*Constants.WheelBaseWidth/2.0, vel + curve*vel*Constants.WheelBaseWidth/2.0);
+        tankDrive(vel - curve*vel*Constants.WHEEL_BASE_WIDTH/2.0, vel + curve*vel*Constants.WHEEL_BASE_WIDTH/2.0);
     }
 
 

@@ -26,11 +26,7 @@ import edu.wpi.first.wpilibj.winnovation.utils.LinearVictor;
 
 
 /**
- * The VM is configured to automatically run this class, and to call the
- * functions corresponding to each mode, as described in the IterativeRobot
- * documentation. If you change the name of this class or the package after
- * creating this project, you must also update the manifest file in the resource
- * directory.
+ * The main robot routine
  */
 public class MyRobot extends IterativeRobot {
 
@@ -69,33 +65,33 @@ public class MyRobot extends IterativeRobot {
     public void robotInit() {
 
         // init controls
-        leftJoystick = new Joystick(Constants.LeftJoystickPort);
-        rightJoystick = new Joystick(Constants.RightJoystickPort);
+        leftJoystick = new Joystick(Constants.LEFT_JOYSTICK_PORT);
+        rightJoystick = new Joystick(Constants.RIGHT_JOYSTICK_PORT);
 
         // init sensors
-        lEncoder = new Encoder(Constants.LeftDriveEncoderAlphaCh,
-                Constants.LeftDriveEncoderBetaCh, true, Encoder.EncodingType.k1X);
-        rEncoder = new Encoder(Constants.RightDriveEncoderAlphaCh,
-                Constants.RightDriveEncoderBetaCh, true, Encoder.EncodingType.k1X);
-        lEncoder.setDistancePerPulse(Constants.LeftDriveDistancePerPulse);
-        rEncoder.setDistancePerPulse(Constants.RightDriveDistancePerPulse);
+        lEncoder = new Encoder(Constants.LEFT_DRIVE_ENCODER_A_CH,
+                Constants.LEFT_DRIVE_ENCODER_B_CH, true, Encoder.EncodingType.k1X);
+        rEncoder = new Encoder(Constants.RIGHT_DRIVE_ENCODER_A_CH,
+                Constants.RIGHT_DRIVE_ENCODER_B_CH, true, Encoder.EncodingType.k1X);
+        lEncoder.setDistancePerPulse(Constants.LEFT_DRIVE_DIST_PER_PULSE);
+        rEncoder.setDistancePerPulse(Constants.RIGHT_DRIVE_DIST_PER_PULSE);
         lEncoder.start();
         rEncoder.start();
 
-        gyro = new FixedGyro(Constants.GyroCh);
+        gyro = new FixedGyro(Constants.GYRO_CH);
 
 
         // speed controllers
-        if(Constants.IsPracticeBot) {
-            lDriveCim1 = new LinearVictor(Constants.LeftDriveCim1Ch);
-            lDriveCim2 = new LinearVictor(Constants.LeftDriveCim2Ch);
-            rDriveCim1 = new LinearVictor(Constants.RightDriveCim1Ch);
-            rDriveCim2 = new LinearVictor(Constants.RightDriveCim2Ch);
+        if(Constants.IS_PRACTICE_BOT) {
+            lDriveCim1 = new LinearVictor(Constants.LEFT_DRIVE_CIM_1_CH);
+            lDriveCim2 = new LinearVictor(Constants.LEFT_DRIVE_CIM_2_CH);
+            rDriveCim1 = new LinearVictor(Constants.RIGHT_DRIVE_CIM_1_CH);
+            rDriveCim2 = new LinearVictor(Constants.RIGHT_DRIVE_CIM_2_CH);
         } else {
-            lDriveCim1 = new Jaguar(Constants.LeftDriveCim1Ch);
-            lDriveCim2 = new Jaguar(Constants.LeftDriveCim2Ch);
-            rDriveCim1 = new Jaguar(Constants.RightDriveCim1Ch);
-            rDriveCim2 = new Jaguar(Constants.RightDriveCim2Ch);
+            lDriveCim1 = new Jaguar(Constants.LEFT_DRIVE_CIM_1_CH);
+            lDriveCim2 = new Jaguar(Constants.LEFT_DRIVE_CIM_2_CH);
+            rDriveCim1 = new Jaguar(Constants.RIGHT_DRIVE_CIM_1_CH);
+            rDriveCim2 = new Jaguar(Constants.RIGHT_DRIVE_CIM_2_CH);
         }
 
         // solenoids
@@ -118,7 +114,7 @@ public class MyRobot extends IterativeRobot {
         localizer = new Localizer(gyro, lEncoder, rEncoder);
         localizer.reset();
         robotDrive = new RobotDrive(lDriveCim1, lDriveCim2, rDriveCim1, rDriveCim2);
-        testMotion = new TurnToMotion(robotDrive, localizer, 60.0);
+        testMotion = new TurnToMotion(robotDrive, localizer, 0.3, 60.0);
 
         /*compressor.start();
 
@@ -130,7 +126,7 @@ public class MyRobot extends IterativeRobot {
     public void autonomousContinuous() {
         super.autonomousContinuous();
         localizer.update();
-        Timer.delay(Constants.ContinuousInterval);
+        Timer.delay(Constants.CONTINUOUS_INTERVAL);
     }
 
 
@@ -145,7 +141,7 @@ public class MyRobot extends IterativeRobot {
             testMotion.doMotion();
             SmartDashboard.log(testMotion.isDone(), "test motion");
         }
-        Timer.delay(Constants.PeriodicInterval);
+        Timer.delay(Constants.PERIODIC_INTERVAL);
 
     }
 
@@ -168,7 +164,7 @@ public class MyRobot extends IterativeRobot {
     public void teleopContinuous() {
         super.teleopContinuous();
         localizer.update();
-        Timer.delay(Constants.ContinuousInterval);
+        Timer.delay(Constants.CONTINUOUS_INTERVAL);
     }
 
     /**
@@ -194,7 +190,7 @@ public class MyRobot extends IterativeRobot {
         } else if(!rightJoystick.getButton(Constants.GearboxButton)) {
             gearButtonReleased = true;
         }*/
-        Timer.delay(Constants.PeriodicInterval);
+        Timer.delay(Constants.PERIODIC_INTERVAL);
 
     }
     

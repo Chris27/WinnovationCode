@@ -1,14 +1,9 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
-
 package edu.wpi.first.wpilibj.winnovation.utils;
 
 import com.sun.squawk.util.MathUtils;
 
 /**
- *
+ * Utility to fit angles in [-Pi,PI) or [-180,180)
  * @author Chris
  */
 public class Angle {
