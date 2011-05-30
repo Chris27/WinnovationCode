@@ -5,7 +5,6 @@
 package edu.wpi.first.wpilibj.winnovation.motions;
 
 import edu.wpi.first.wpilibj.RobotDrive;
-import edu.wpi.first.wpilibj.SmartDashboard;
 import edu.wpi.first.wpilibj.winnovation.robot.Constants;
 import edu.wpi.first.wpilibj.winnovation.robot.Localizer;
 import edu.wpi.first.wpilibj.winnovation.utils.RealPose2D;
@@ -65,7 +64,7 @@ public class DriveToMotion implements Motion {
         RealPose2D transform = (new RealPose2D(localizer.getX(), localizer.getY(), localizer.getTh())).inverse();
         RealPose2D t = RealPose2D.multiply(transform, target);
 
-        // compute desired curvature
+        
         double x = t.getX();
         double y = t.getY();
         
@@ -75,18 +74,19 @@ public class DriveToMotion implements Motion {
             return;
         }
 
+        // compute desired curvature of path to the point
         double k = (2*y)/(x*x + y*y);
         double sign = x >= 0 ? 1 : -1;
 
         // error is distance to the target
         //double error = Math.sqrt(x*x + y*y)*sign;
         // Just use x for the error so bot doesn't death spin when adjacent to the target
-        double error = Math.abs(x);
+        double error = x;
 
         // comput output speed
-        double v = sign*pid.calculate(error);
-        //v = sign*0.30;
+        double v = pid.calculate(error);
 
+        // arc to the desired point
         robotDrive.tankDrive(v-v*k*Constants.WHEEL_BASE_WIDTH/2.0, v+v*k*Constants.WHEEL_BASE_WIDTH/2.0);
 
         if(pid.onTarget() && Math.abs(localizer.getVel()) < EXIT_SPEED) {

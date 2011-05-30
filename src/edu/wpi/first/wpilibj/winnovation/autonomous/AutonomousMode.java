@@ -15,8 +15,8 @@ import java.util.Vector;
  */
 public abstract class AutonomousMode {
 
-    protected Vector driveMotions;
-    protected Vector auxMotions;
+    protected Vector driveMotions; // list of drive train motions
+    protected Vector auxMotions; // list of auxiliary motions
     
     protected AutonomousMode() {
         driveMotions = new Vector();

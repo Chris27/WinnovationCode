@@ -66,14 +66,6 @@ public class Constants {
 
     // dimensions
     public static final double WHEEL_BASE_WIDTH = 24.75/12.0; // distance between the left and right wheels (ft)
-    //public static double WheelRadius = 1.75/12.0;
-    //public static double LobsterWheelRadius = 1.75/12.0;
-
-
-
-    // encoders
-    //public static double EncoderTicksPerRev = 360;
-
 
     // Controls
     public static final Joystick.ButtonType LOBSTER_BUTTON = Joystick.ButtonType.kTrigger;
