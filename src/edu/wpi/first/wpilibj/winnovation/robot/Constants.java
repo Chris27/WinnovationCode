@@ -12,7 +12,8 @@ public class Constants {
     
     // misc
     public static final boolean IS_PRACTICE_BOT = true;
-    public static final boolean USE_GYRO = false;
+    public static final boolean USE_GYRO = true;
+    public static final boolean LOGGING_ENABLED = true;
 
     // intervals code runs at
     public static final double CONTINUOUS_INTERVAL = 0.01; // seconds
@@ -23,7 +24,6 @@ public class Constants {
     public static final int PRESSURE_SWITCH_CH = 0;
     public static final int COMPRESSOR_RELAY_SLOT = 0;
     public static final int COMPRESSOR_RELAY_CH = 0;
-
 
     // sensors
     public static final int LEFT_DRIVE_ENCODER_A_CH = 3;

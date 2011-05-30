@@ -19,6 +19,7 @@ import edu.wpi.first.wpilibj.RobotDrive;
 import edu.wpi.first.wpilibj.SmartDashboard;
 import edu.wpi.first.wpilibj.Solenoid;
 import edu.wpi.first.wpilibj.Timer;
+import edu.wpi.first.wpilibj.winnovation.motions.DriveToMotion;
 import edu.wpi.first.wpilibj.winnovation.motions.Motion;
 import edu.wpi.first.wpilibj.winnovation.motions.TurnToMotion;
 import edu.wpi.first.wpilibj.winnovation.utils.FixedGyro;
@@ -113,8 +114,8 @@ public class MyRobot extends IterativeRobot {
         super.autonomousInit();
         localizer = new Localizer(gyro, lEncoder, rEncoder);
         localizer.reset();
-        robotDrive = new RobotDrive(lDriveCim1, lDriveCim2, rDriveCim1, rDriveCim2);
-        testMotion = new TurnToMotion(robotDrive, localizer, 0.3, 60.0);
+        robotDrive = new PIDRobotDrive(localizer, lDriveCim1, lDriveCim2, rDriveCim1, rDriveCim2);
+        testMotion = new TurnToMotion(robotDrive, 0.30, localizer, -90.0);
 
         /*compressor.start();
 
@@ -134,9 +135,7 @@ public class MyRobot extends IterativeRobot {
      * This function is called periodically during autonomous
      */
     public void autonomousPeriodic() {
-
         
-
         if(testMotion != null) {
             testMotion.doMotion();
             SmartDashboard.log(testMotion.isDone(), "test motion");
@@ -154,7 +153,7 @@ public class MyRobot extends IterativeRobot {
             robotDrive = new PIDRobotDrive(localizer, lDriveCim1, lDriveCim2, rDriveCim1, rDriveCim2);
         }
 
-        // make sure auton is dead
+        // make sure auton test is dead
         if(testMotion != null)
             testMotion.abort();
         
@@ -173,7 +172,6 @@ public class MyRobot extends IterativeRobot {
     public void teleopPeriodic() {
         
        robotDrive.tankDrive(leftJoystick, rightJoystick);
-
         /*
         // toggle lobsters
         if(leftJoystick.getButton(Constants.LobsterButton) && lobsterButtonReleased) {

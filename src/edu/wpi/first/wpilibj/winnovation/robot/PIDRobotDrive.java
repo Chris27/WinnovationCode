@@ -22,9 +22,10 @@ public class PIDRobotDrive extends RobotDrive {
     
 
     // PID constants
-    private double Kp = 0.070*18; // constants on right multipliers account for
-    private double Ki = 0.005*9; // the robot being on carpet
+    private double Kp = 0.070*20; // constants on right multipliers account for
+    private double Ki = 0.005*14; // the robot being on carpet
     private double Kd = 0.016*15;
+    private final double CAP = 2.5; // caps the amount of effect the pid can tweak the motor inputs
 
 
 
@@ -43,9 +44,9 @@ public class PIDRobotDrive extends RobotDrive {
         rController = new ThreadlessPID(Kp, Ki, Kd);
 
         lController.setInputRange(-0.25*Constants.MAX_DRIVE_SPEED, 0.25*Constants.MAX_DRIVE_SPEED);
-        lController.setOutputRange(-0.75, 0.75);
+        lController.setOutputRange(-CAP, CAP);
         rController.setInputRange(-0.25*Constants.MAX_DRIVE_SPEED, 0.25*Constants.MAX_DRIVE_SPEED);
-        rController.setOutputRange(-0.75, 0.75);
+        rController.setOutputRange(-CAP, CAP);
         lController.setSetpoint(0);
         rController.setSetpoint(0);
         
@@ -59,6 +60,10 @@ public class PIDRobotDrive extends RobotDrive {
         return val;
     }
 
+    private boolean sameSign(double a, double b) {
+        return ((a >= 0 && b >= 0) || (a <= 0 && b <= 0));
+    }
+
 
     public void tankDrive(GenericHID leftStick, GenericHID rightStick) {
 
@@ -66,8 +71,8 @@ public class PIDRobotDrive extends RobotDrive {
     }
 
     public void tankDrive(double lVal, double rVal) {
-        double leftVel = -lVal*Constants.MAX_DRIVE_SPEED;
-        double rightVel = -rVal*Constants.MAX_DRIVE_SPEED;
+        double leftVel = lVal*Constants.MAX_DRIVE_SPEED;
+        double rightVel = rVal*Constants.MAX_DRIVE_SPEED;
         tankDriveAtVelocity(leftVel, rightVel);
     }
 
@@ -83,29 +88,34 @@ public class PIDRobotDrive extends RobotDrive {
 
         double leftError = leftVel - localizer.getLVel();
         double rightError = rightVel - localizer.getRVel();
-        double leftCorrection = lController.calculate(leftError);
-        double rightCorrection = -rController.calculate(rightError);
+        double leftCorrection = lController.calculate(leftError)*Math.abs(leftOut);
+        double rightCorrection = -rController.calculate(rightError)*Math.abs(rightOut);
 
-        leftOut = cap(leftOut + leftCorrection);
-        rightOut = cap(rightOut + rightCorrection);
+        // to avoid "seizure mode" don't allow the correction to change the sign of the output
+        double lTweaked = cap(leftOut + leftCorrection);
+        double rTweaked = cap(rightOut + rightCorrection);
+        leftOut = sameSign(lTweaked, leftOut) ? lTweaked : 0;
+        rightOut = sameSign(rTweaked, rightOut) ? rTweaked : 0;
 
          // deadzone
         if(Math.abs(leftVel) < Constants.MIN_DRIVE_SPEED)
             leftOut = 0;
         if(Math.abs(rightVel) < Constants.MIN_DRIVE_SPEED)
             rightOut = 0;
-  
+
         lCim1.set(leftOut);
         lCim2.set(leftOut);
         rCim1.set(rightOut);
         rCim2.set(rightOut);
 
-        SmartDashboard.log(leftVel, "desired left ft/s");
-        SmartDashboard.log(rightVel, "desired right ft/s");
-        SmartDashboard.log(lCim1.get(), "left cim ouput");
-        SmartDashboard.log(rCim1.get(), "right cim output");
-        SmartDashboard.log(leftCorrection, "left correction");
-        SmartDashboard.log(rightCorrection, "right correction");
+        if(Constants.LOGGING_ENABLED) {
+            SmartDashboard.log(leftVel, "desired left ft/s");
+            SmartDashboard.log(rightVel, "desired right ft/s");
+            SmartDashboard.log(lCim1.get(), "left cim ouput");
+            SmartDashboard.log(rCim1.get(), "right cim output");
+            SmartDashboard.log(leftCorrection, "left correction");
+            SmartDashboard.log(rightCorrection, "right correction");
+        }
     }
 
     public void drive(double vel, double curve) {

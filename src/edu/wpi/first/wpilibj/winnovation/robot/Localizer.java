@@ -112,7 +112,7 @@ public class Localizer {
         if(Constants.USE_GYRO)
             thVel = (gyro.getAngle()*Math.PI/180.0 - th)/delT; // gyro is off...
         else
-            thVel = (rVel - lVel) / (Constants.WHEEL_BASE_WIDTH);
+            thVel = (rVel - lVel)/(Constants.WHEEL_BASE_WIDTH);
 
 
 
@@ -137,7 +137,7 @@ public class Localizer {
         x = x + delT/6.0*(k00 + 2.0*(k10+k20) + k30);
         y = y + delT/6.0*(k01 + 2.0*(k11+k21) + k31);
         if(Constants.USE_GYRO)
-            th = gyro.getAngle();
+            th = gyro.getAngle()*Math.PI/180.0;
         else
             th = th + (delT/6.0*(k02 + 2.0*(k12+k22) + k32));
 
@@ -146,17 +146,19 @@ public class Localizer {
         time = curTime;
 
         // log stuff
-        SmartDashboard.log(lEncoder.getDistance(), "lEncoder (ft)");
-        SmartDashboard.log(rEncoder.getDistance(), "rEncoder (ft)");
-        SmartDashboard.log(lVel, "lVel (ft/s)");
-        SmartDashboard.log(rVel, "rVel (ft/s)");
-        SmartDashboard.log(gyro.getAngle(), "gyro");
-        SmartDashboard.log(x, "x (ft)");
-        SmartDashboard.log(y, "y (ft)");
-        SmartDashboard.log(Angle.normalizeDeg(th*180.0/Math.PI), "heading (deg)");
-        SmartDashboard.log(v, "lin speed (ft/s)");
-        SmartDashboard.log(w*180.0/Math.PI, "rot speed (deg/s)");
-        SmartDashboard.log(delT, "delT");
+        if(Constants.LOGGING_ENABLED) {
+            //SmartDashboard.log(lEncoder.getDistance(), "lEncoder (ft)");
+            //SmartDashboard.log(rEncoder.getDistance(), "rEncoder (ft)");
+            //SmartDashboard.log(lVel, "lVel (ft/s)");
+            //SmartDashboard.log(rVel, "rVel (ft/s)");
+            SmartDashboard.log(gyro.getAngle(), "gyro");
+            SmartDashboard.log(x, "x (ft)");
+            SmartDashboard.log(y, "y (ft)");
+            SmartDashboard.log(Angle.normalizeDeg(th*180.0/Math.PI), "heading (deg)");
+            //SmartDashboard.log(v, "lin speed (ft/s)");
+            //SmartDashboard.log(w*180.0/Math.PI, "rot speed (deg/s)");
+            //SmartDashboard.log(delT, "delT");
+        }
     }
 
     public synchronized void reset() {
