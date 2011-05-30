@@ -20,19 +20,21 @@ public class TurnToMotion implements Motion {
     private Localizer localizer;
     private double target; // radians
 
+
     private final double Threshold = 2.0*Math.PI/180.0; // accept 2 degrees of error
+    private final double EXIT_SPEED = 2.0; // ft/s
 
     // PID params
-    private final double Kp = 0.6;
-    private final double Ki = 0.0;
-    private final double Kd = 0.0;
+    private final double Kp = 0.10;
+    private final double Ki = 0.01;
+    private final double Kd = 0.01;
 
     /**
      * Turns to the provided heading
      *
      * @param heading (degrees)
      */
-    public TurnToMotion(RobotDrive robotDrive, Localizer localizer, double speed, double heading) {
+    public TurnToMotion(RobotDrive robotDrive, double speed, Localizer localizer, double heading) {
         done = false;
         pid = new ThreadlessPID(Kp, Ki, Kd);
         pid.setOutputRange(-speed, speed);
@@ -41,6 +43,7 @@ public class TurnToMotion implements Motion {
         this.robotDrive = robotDrive;
         this.localizer = localizer;
         this.target = Angle.normalize(heading*Math.PI/180.0);
+
     }
 
     public boolean isDone() {
@@ -48,6 +51,11 @@ public class TurnToMotion implements Motion {
     }
 
     public void doMotion() {
+
+        if(done) {
+            abort();
+            return;
+        }
 
         double curHeading = Angle.normalize(localizer.getTh());
         double dif = target - curHeading;
@@ -70,7 +78,7 @@ public class TurnToMotion implements Motion {
 
         double speed = pid.calculate(error);
 
-        if(pid.onTarget()) {
+        if(pid.onTarget() && Math.abs(localizer.getLVel()) < EXIT_SPEED) {
             abort();
         }
         else {
