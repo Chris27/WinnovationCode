@@ -4,6 +4,7 @@ package edu.wpi.first.wpilibj.winnovation.motions;
 import edu.wpi.first.wpilibj.RobotDrive;
 import edu.wpi.first.wpilibj.winnovation.robot.Localizer;
 import edu.wpi.first.wpilibj.winnovation.utils.Angle;
+import edu.wpi.first.wpilibj.winnovation.utils.PIDTunable;
 import edu.wpi.first.wpilibj.winnovation.utils.ThreadlessPID;
 
 /**
@@ -11,7 +12,7 @@ import edu.wpi.first.wpilibj.winnovation.utils.ThreadlessPID;
  *
  * @author Chris
  */
-public class TurnToMotion implements Motion {
+public class TurnToMotion implements Motion, PIDTunable {
 
     private boolean done;
     private ThreadlessPID pid;
@@ -21,13 +22,12 @@ public class TurnToMotion implements Motion {
 
 
     private final double Threshold = 2.0*Math.PI/180.0; // accept 2 degrees of error
-    private final double EXIT_SPEED = 2.0; // ft/s
-    private final int MAX_OSCILLATIONS = 1;
+    private final double EXIT_SPEED = 1.3; // ft/s
+    private final int MAX_OSCILLATIONS = 5;
 
-    // PID params
-    private final double Kp = 0.05;
-    private final double Ki = 0.01;
-    private final double Kd = 0.01;
+    private double Kp = 0.005*55;
+    private double Ki = 0.005*2;
+    private double Kd = 0.005*7;
 
 
     private int oscillations = 0;
@@ -112,6 +112,39 @@ public class TurnToMotion implements Motion {
     public void abort() {
         done = true;
         robotDrive.tankDrive(0,0);
+    }
+
+    public double getKp() {
+        return Kp;
+    }
+
+    public double getKi() {
+        return Ki;
+    }
+
+    public double getKd() {
+        return Kd;
+    }
+
+    public void setKp(double Kp) {
+        this.Kp = Kp;
+        pid.setP(Kp);
+    }
+
+    public void setKi(double Ki) {
+        this.Ki = Ki;
+        pid.setI(Ki);
+    }
+
+    public void setKd(double Kd) {
+        this.Kd = Kd;
+        pid.setD(Kd);
+    }
+
+    public void setPID(double Kp, double Ki, double Kd) {
+        setKp(Kp);
+        setKi(Ki);
+        setKd(Kd);
     }
 
 }

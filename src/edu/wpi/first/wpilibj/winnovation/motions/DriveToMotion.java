@@ -7,6 +7,7 @@ package edu.wpi.first.wpilibj.winnovation.motions;
 import edu.wpi.first.wpilibj.RobotDrive;
 import edu.wpi.first.wpilibj.winnovation.robot.Constants;
 import edu.wpi.first.wpilibj.winnovation.robot.Localizer;
+import edu.wpi.first.wpilibj.winnovation.utils.PIDTunable;
 import edu.wpi.first.wpilibj.winnovation.utils.RealPose2D;
 import edu.wpi.first.wpilibj.winnovation.utils.ThreadlessPID;
 
@@ -14,18 +15,18 @@ import edu.wpi.first.wpilibj.winnovation.utils.ThreadlessPID;
  *
  * @author Chris
  */
-public class DriveToMotion implements Motion {
+public class DriveToMotion implements Motion, PIDTunable {
 
-    private final double TOLERANCE = 4.0/12.0; // error tolerance (ft)
+    private final double TOLERANCE = 1.0; // error tolerance (ft)
     private final double EXIT_SPEED = 2.0; // ft/s
 
     private boolean done;
     private ThreadlessPID pid;
 
     // PID params
-    private double Kp = 0.15;
-    private double Ki = 0.05;
-    private double Kd = 0.04;
+    private double Kp = 0.001*22;//0.15;
+    private double Ki = 0.001*2;//0.05;
+    private double Kd = 0.001*7;//0.04;
     private RobotDrive robotDrive;
     private Localizer localizer;
     private RealPose2D target;
@@ -99,6 +100,39 @@ public class DriveToMotion implements Motion {
         done = true;
         robotDrive.tankDrive(0, 0);
 
+    }
+
+    public double getKp() {
+        return Kp;
+    }
+
+    public double getKi() {
+        return Ki;
+    }
+
+    public double getKd() {
+        return Kd;
+    }
+
+    public void setKp(double Kp) {
+        this.Kp = Kp;
+        pid.setP(Kp);
+    }
+
+    public void setKi(double Ki) {
+        this.Ki = Ki;
+        pid.setI(Ki);
+    }
+
+    public void setKd(double Kd) {
+        this.Kd = Kd;
+        pid.setD(Kd);
+    }
+
+    public void setPID(double Kp, double Ki, double Kd) {
+        setKp(Kp);
+        setKi(Ki);
+        setKd(Kd);
     }
 
 

@@ -65,7 +65,7 @@ public class Constants {
     
 
     // dimensions
-    public static final double WHEEL_BASE_WIDTH = 24.75/12.0; // distance between the left and right wheels (ft)
+    public static double WHEEL_BASE_WIDTH = 1.958;//23.50/12.0; // distance between the left and right wheels (ft)
 
     // Controls
     public static final Joystick.ButtonType LOBSTER_BUTTON = Joystick.ButtonType.kTrigger;

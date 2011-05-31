@@ -4,13 +4,14 @@ import edu.wpi.first.wpilibj.GenericHID;
 import edu.wpi.first.wpilibj.RobotDrive;
 import edu.wpi.first.wpilibj.SmartDashboard;
 import edu.wpi.first.wpilibj.SpeedController;
+import edu.wpi.first.wpilibj.winnovation.utils.PIDTunable;
 import edu.wpi.first.wpilibj.winnovation.utils.ThreadlessPID;
 /**
  * Extends RobotDrive to accept velocity as input instead of power
  *
  * @author Chris
  */
-public class PIDRobotDrive extends RobotDrive {
+public class PIDRobotDrive extends RobotDrive implements PIDTunable{
 
     private ThreadlessPID lController;
     private ThreadlessPID rController;
@@ -22,11 +23,16 @@ public class PIDRobotDrive extends RobotDrive {
     
 
     // PID constants
-    private double Kp = 0.070*20; // constants on right multipliers account for
-    private double Ki = 0.005*14; // the robot being on carpet
-    private double Kd = 0.016*15;
-    private final double CAP = 2.5; // caps the amount of effect the pid can tweak the motor inputs
+    // these account for the wheels bearing a load
+    private double pMulti = 25;
+    private double iMulti = 29;//18;
+    private double dMulti = 20;
+    // pid values
+    private double Kp = 0.070*pMulti;
+    private double Ki = 0.005*iMulti;
+    private double Kd = 0.016*dMulti;
 
+    private final double CAP = 5.0; // caps the amount of effect the pid can tweak the motor inputs
 
 
     public PIDRobotDrive(Localizer localizer,
@@ -76,6 +82,26 @@ public class PIDRobotDrive extends RobotDrive {
         tankDriveAtVelocity(leftVel, rightVel);
     }
 
+    public void cheesyDrive(double power, double curv) {
+        cheesyDrive(power, curv, false);
+    }
+
+    public void cheesyDrive(double power, double curv, boolean quickTurn) {
+        curv = cap(curv);
+        power = cap(power);
+
+        if(quickTurn) {
+
+        } else {
+            double left = curv;
+            double right = 1 - curv;
+
+
+            // todo
+        }
+
+    }
+
     /**
      *
      * @param leftVel linear velocity of left wheels
@@ -113,13 +139,50 @@ public class PIDRobotDrive extends RobotDrive {
             SmartDashboard.log(rightVel, "desired right ft/s");
             SmartDashboard.log(lCim1.get(), "left cim ouput");
             SmartDashboard.log(rCim1.get(), "right cim output");
-            SmartDashboard.log(leftCorrection, "left correction");
-            SmartDashboard.log(rightCorrection, "right correction");
+            SmartDashboard.log((leftCorrection/Math.abs(leftOut)/CAP), "left correction");
+            SmartDashboard.log((rightCorrection/Math.abs(rightOut)/CAP), "right correction");
         }
     }
 
     public void drive(double vel, double curve) {
         tankDrive(vel - curve*vel*Constants.WHEEL_BASE_WIDTH/2.0, vel + curve*vel*Constants.WHEEL_BASE_WIDTH/2.0);
+    }
+
+    public double getKp() {
+        return Kp;
+    }
+
+    public double getKi() {
+        return Ki;
+    }
+
+    public double getKd() {
+        return Kd;
+    }
+
+    public void setKp(double Kp) {
+        this.Kp = Kp;
+        lController.setP(Kp);
+        rController.setP(Kp);
+
+    }
+
+    public void setKi(double Ki) {
+        this.Ki = Ki;
+        lController.setI(Ki);
+        rController.setI(Ki);
+    }
+
+    public void setKd(double Kd) {
+        this.Kd = Kd;
+        lController.setD(Kd);
+        rController.setD(Kd);
+    }
+
+    public void setPID(double Kp, double Ki, double Kd) {
+        setKp(Kp);
+        setKi(Ki);
+        setKd(Kd);
     }
 
 

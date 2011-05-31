@@ -149,9 +149,9 @@ public class Localizer {
         if(Constants.LOGGING_ENABLED) {
             //SmartDashboard.log(lEncoder.getDistance(), "lEncoder (ft)");
             //SmartDashboard.log(rEncoder.getDistance(), "rEncoder (ft)");
-            //SmartDashboard.log(lVel, "lVel (ft/s)");
-            //SmartDashboard.log(rVel, "rVel (ft/s)");
-            SmartDashboard.log(gyro.getAngle(), "gyro");
+            SmartDashboard.log(lVel, "lVel (ft/s)");
+            SmartDashboard.log(rVel, "rVel (ft/s)");
+            //SmartDashboard.log(gyro.getAngle(), "gyro");
             SmartDashboard.log(x, "x (ft)");
             SmartDashboard.log(y, "y (ft)");
             SmartDashboard.log(Angle.normalizeDeg(th*180.0/Math.PI), "heading (deg)");
