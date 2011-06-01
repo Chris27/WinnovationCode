@@ -5,6 +5,10 @@
 
 package edu.wpi.first.wpilibj.winnovation.autonomous;
 
+import edu.wpi.first.wpilibj.winnovation.motions.auxiliarymotions.AuxiliaryPreset;
+import edu.wpi.first.wpilibj.winnovation.motions.auxiliarymotions.ReleaseTubeMotion;
+import edu.wpi.first.wpilibj.winnovation.motions.auxiliarymotions.MoveAuxiliaryToPresetMotion;
+import edu.wpi.first.wpilibj.winnovation.motions.drivemotions.DriveStraightMotion;
 import edu.wpi.first.wpilibj.RobotDrive;
 import edu.wpi.first.wpilibj.winnovation.robot.AuxiliaryDrive;
 import edu.wpi.first.wpilibj.winnovation.robot.Localizer;
@@ -28,13 +32,13 @@ public class OneTubeHighMid extends AutonomousMode {
 
         /* Drive Motions */
         // drive to the rack
-        driveMotions.addElement(new DriveToMotion(robotDrive, FORWARD_SPEED, localizer, -FORWARD_DISTANCE, 0));
+        driveMotions.addElement(new DriveStraightMotion(-FORWARD_DISTANCE, FORWARD_SPEED));
         // wait for the arm to get to position
         driveMotions.addElement(new SynchronizeMotion());
         // wait for the arm to score
         driveMotions.addElement(new SynchronizeMotion());
         // back up
-        driveMotions.addElement(new DriveToMotion(robotDrive, FORWARD_SPEED, localizer, BACKUP_DISTANCE, 0));
+        driveMotions.addElement(new DriveStraightMotion(BACKUP_DISTANCE, FORWARD_SPEED));
 
         /* Auxiliary motions */
         // drive a bit before bringing the arm up

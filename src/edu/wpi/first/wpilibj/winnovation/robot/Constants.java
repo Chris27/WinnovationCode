@@ -60,7 +60,7 @@ public class Constants {
         // drive
     public static final double HIGH_GEAR_SPEED = 13.0; // ft/s
     public static final double LOW_GEAR_SPEED = 6.0; // ft/s // is this right?
-    public static final double MIN_DRIVE_SPEED = 0.7; // ft/s
+    public static final double DRIVE_JOYSTICK_THRESH = 0.05; // ft/s
     public static final double LEFT_DRIVE_DIST_PER_PULSE = 0.0086528; // feet per encoder tick
     public static final double RIGHT_DRIVE_DIST_PER_PULSE = 0.0068988; // feet per encoder tick
     

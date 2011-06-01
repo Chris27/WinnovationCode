@@ -8,21 +8,24 @@ package edu.wpi.first.wpilibj.winnovation.motions;
  */
 public class WaitMotion implements Motion{
 
-    private long targetTime;
+    private long startTime = -1;
+    private long waitTime;
     private boolean aborted;
 
     public WaitMotion(double seconds) {
-        aborted = false;
-        targetTime = System.currentTimeMillis() + (long) (1000*seconds);
+        aborted = (seconds <= 0);
+        waitTime = (long) (1000*seconds);
     }
 
     public boolean isDone() {
-        return aborted || System.currentTimeMillis() >= targetTime;
+        return aborted || (startTime >= 0 && System.currentTimeMillis() >= startTime + waitTime);
     }
 
 
     public void doMotion() {
-        // do nothing
+        // dont't start the clock until first call to doMotion();
+        if(startTime < 0)
+            startTime = System.currentTimeMillis();
     }
 
     public void abort() {

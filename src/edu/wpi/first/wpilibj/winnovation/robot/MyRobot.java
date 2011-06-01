@@ -7,20 +7,13 @@
 package edu.wpi.first.wpilibj.winnovation.robot;
 
 import edu.wpi.first.wpilibj.Compressor;
-import edu.wpi.first.wpilibj.Encoder;
-import edu.wpi.first.wpilibj.Gyro;
 import edu.wpi.first.wpilibj.IterativeRobot;
-import edu.wpi.first.wpilibj.SpeedController;
-import edu.wpi.first.wpilibj.Jaguar;
 import edu.wpi.first.wpilibj.Joystick;
-import edu.wpi.first.wpilibj.RobotDrive;
 import edu.wpi.first.wpilibj.SmartDashboard;
 import edu.wpi.first.wpilibj.Solenoid;
 import edu.wpi.first.wpilibj.Timer;
-import edu.wpi.first.wpilibj.winnovation.motions.ArcToMotion;
+import edu.wpi.first.wpilibj.winnovation.motions.drivemotions.DriveToPointRelativeMotion;
 import edu.wpi.first.wpilibj.winnovation.motions.Motion;
-import edu.wpi.first.wpilibj.winnovation.utils.FixedGyro;
-import edu.wpi.first.wpilibj.winnovation.utils.LinearVictor;
 import edu.wpi.first.wpilibj.winnovation.utils.PIDTunable;
 import edu.wpi.first.wpilibj.winnovation.utils.PIDTuner;
 import edu.wpi.first.wpilibj.winnovation.utils.PulseTriggerBoolean;
@@ -33,16 +26,8 @@ public class MyRobot extends IterativeRobot {
     // controls
     private Joystick leftJoystick;
     private Joystick rightJoystick;
-    private RobotDrive robotDrive;
-    // sensors
-    private Encoder lEncoder;
-    private Encoder rEncoder;
-    private Gyro gyro;
-    // speed controllers
-    private SpeedController lDriveCim1;
-    private SpeedController lDriveCim2;
-    private SpeedController rDriveCim1;
-    private SpeedController rDriveCim2;
+    private PIDRobotDrive robotDrive;
+
     private Solenoid lobster;
     private Solenoid gearbox;
     private Compressor compressor;
@@ -60,32 +45,6 @@ public class MyRobot extends IterativeRobot {
         // init controls
         leftJoystick = new Joystick(Constants.LEFT_JOYSTICK_PORT);
         rightJoystick = new Joystick(Constants.RIGHT_JOYSTICK_PORT);
-
-        // init sensors
-        lEncoder = new Encoder(Constants.LEFT_DRIVE_ENCODER_A_CH,
-                Constants.LEFT_DRIVE_ENCODER_B_CH, true, Encoder.EncodingType.k1X);
-        rEncoder = new Encoder(Constants.RIGHT_DRIVE_ENCODER_A_CH,
-                Constants.RIGHT_DRIVE_ENCODER_B_CH, true, Encoder.EncodingType.k1X);
-        lEncoder.setDistancePerPulse(Constants.LEFT_DRIVE_DIST_PER_PULSE);
-        rEncoder.setDistancePerPulse(Constants.RIGHT_DRIVE_DIST_PER_PULSE);
-        lEncoder.start();
-        rEncoder.start();
-
-        gyro = new FixedGyro(Constants.GYRO_CH);
-
-
-        // speed controllers
-        if (Constants.IS_PRACTICE_BOT) {
-            lDriveCim1 = new LinearVictor(Constants.LEFT_DRIVE_CIM_1_CH);
-            lDriveCim2 = new LinearVictor(Constants.LEFT_DRIVE_CIM_2_CH);
-            rDriveCim1 = new LinearVictor(Constants.RIGHT_DRIVE_CIM_1_CH);
-            rDriveCim2 = new LinearVictor(Constants.RIGHT_DRIVE_CIM_2_CH);
-        } else {
-            lDriveCim1 = new Jaguar(Constants.LEFT_DRIVE_CIM_1_CH);
-            lDriveCim2 = new Jaguar(Constants.LEFT_DRIVE_CIM_2_CH);
-            rDriveCim1 = new Jaguar(Constants.RIGHT_DRIVE_CIM_1_CH);
-            rDriveCim2 = new Jaguar(Constants.RIGHT_DRIVE_CIM_2_CH);
-        }
 
         // solenoids
         /*lobster = new Solenoid(Constants.LobsterSlot, Constants.LobsterCh);
@@ -105,11 +64,11 @@ public class MyRobot extends IterativeRobot {
 
     public void /*autonomousInit*/ teleopInit() {
         super.autonomousInit();
-        localizer = new Localizer(gyro, lEncoder, rEncoder);
+        localizer = Localizer.getInstance();
         localizer.reset();
+        robotDrive = PIDRobotDrive.getInstance();
 
-        robotDrive = new PIDRobotDrive(localizer, lDriveCim1, lDriveCim2, rDriveCim1, rDriveCim2);
-        testMotion = new ArcToMotion(robotDrive, 0.80, localizer, 7.0, -3.0);
+        testMotion = new DriveToPointRelativeMotion(7.0, -3.0, 0.80);
         pidTuner = new PIDTuner(3, (PIDTunable) testMotion, 0.05, 0.005, 0.05, 40, 10, 0);
 
         gp = new Joystick(3);
@@ -151,7 +110,7 @@ public class MyRobot extends IterativeRobot {
         pidTuner.handle();
         if (pidTuner.reset()) {
             localizer.reset();
-            testMotion = new ArcToMotion(robotDrive, 0.80, localizer, 7.0, -3.0);
+            testMotion = new DriveToPointRelativeMotion(7.0, -3.0, 0.80);
             pidTuner = new PIDTuner(3, (PIDTunable) testMotion, 0.05, 0.005, 0.05, pidTuner.cp, pidTuner.ci, pidTuner.cd);
         }
 
@@ -164,11 +123,8 @@ public class MyRobot extends IterativeRobot {
     }
 //    public void teleopInit() {
 //        super.teleopInit();
-//        if(localizer == null) {
-//            localizer = new Localizer(gyro, lEncoder, rEncoder);
-//            localizer.reset();
-//            robotDrive = new PIDRobotDrive(localizer, lDriveCim1, lDriveCim2, rDriveCim1, rDriveCim2);
-//        }
+//        localizer = Localizer.getInstance();
+//        robotDrive = PIDRobotDrive.getInstance();
 //
 //        // make sure auton test is dead
 //        if(testMotion != null)
