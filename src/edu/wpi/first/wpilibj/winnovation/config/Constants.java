@@ -1,5 +1,5 @@
 
-package edu.wpi.first.wpilibj.winnovation.robot;
+package edu.wpi.first.wpilibj.winnovation.config;
 
 import edu.wpi.first.wpilibj.Joystick;
 
@@ -66,11 +66,15 @@ public class Constants {
     
 
     // dimensions
-    public static double WHEEL_BASE_WIDTH = 28.0/12.0;//1.958;//23.50/12.0; // distance between the left and right wheels (ft)
+    public static double WHEEL_BASE_WIDTH = 27.5/12.0;//28.0/12.0;//1.958;//23.50/12.0; // distance between the left and right wheels (ft)
 
     // Controls
+    public static final int LOBSTER_JOYSTICK = RIGHT_JOYSTICK_PORT;
+    public static final int SHIFT_JOYSTICK = LEFT_JOYSTICK_PORT;
     public static final Joystick.ButtonType LOBSTER_BUTTON = Joystick.ButtonType.kTrigger;
     public static final Joystick.ButtonType GEARBOX_BUTTON = Joystick.ButtonType.kTrigger;
 
+    // auto straight for cheesy drive
+    public static final double STRAIGHT_LOCK_THRESH = 0.1;
 
 }

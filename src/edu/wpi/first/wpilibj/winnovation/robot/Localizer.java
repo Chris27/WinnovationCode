@@ -1,5 +1,6 @@
 package edu.wpi.first.wpilibj.winnovation.robot;
 
+import edu.wpi.first.wpilibj.winnovation.config.Constants;
 import edu.wpi.first.wpilibj.Encoder;
 import edu.wpi.first.wpilibj.Gyro;
 import edu.wpi.first.wpilibj.SmartDashboard;
@@ -26,6 +27,8 @@ public class Localizer {
     private double lVel;  // ft/s
     private double rVel;  // ft/s
     private long time;
+
+    private boolean lobstered = false;
 
     public Localizer(Gyro gyro, Encoder lEncoder, Encoder rEncoder) {
         this.gyro = gyro;
@@ -112,6 +115,23 @@ public class Localizer {
     }
 
     /**
+     * Call this method every time lobsters are deployed/undeployed to
+     * update the localizer about the effective 90 degree rotation
+     *
+     * @param setLobser true if lobsters are down, false otherwise
+     */
+    public synchronized void setLobsters(boolean setLobser) {
+        // the signs here might be backwards
+        if(!lobstered && setLobser) {
+            lobstered = true;
+            th += Math.PI/2.0;
+        } else if(lobstered && !setLobser) {
+            lobstered = false;
+            th -= Math.PI/2.0;
+        }
+    }
+
+    /**
      * Updates the position of the robot.  This method should be called
      * regularly and frequently for best accuracy
      *
@@ -130,9 +150,6 @@ public class Localizer {
         } else {
             thVel = (rVel - lVel) / (Constants.WHEEL_BASE_WIDTH);
         }
-
-
-
 
         double w = thVel; // convert to radians as expected by Java trig functions
         double v = (lVel + rVel) / 2.0;

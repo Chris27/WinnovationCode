@@ -1,12 +1,16 @@
 package edu.wpi.first.wpilibj.winnovation.robot;
 
+import edu.wpi.first.wpilibj.winnovation.config.Constants;
 import edu.wpi.first.wpilibj.GenericHID;
 import edu.wpi.first.wpilibj.Jaguar;
 import edu.wpi.first.wpilibj.RobotDrive;
 import edu.wpi.first.wpilibj.SmartDashboard;
 import edu.wpi.first.wpilibj.SpeedController;
+import edu.wpi.first.wpilibj.winnovation.config.PIDValues;
+import edu.wpi.first.wpilibj.winnovation.utils.Angle;
 import edu.wpi.first.wpilibj.winnovation.utils.LinearVictor;
 import edu.wpi.first.wpilibj.winnovation.utils.PIDTunable;
+import edu.wpi.first.wpilibj.winnovation.utils.PulseTriggerBoolean;
 import edu.wpi.first.wpilibj.winnovation.utils.ThreadlessPID;
 
 /**
@@ -24,17 +28,23 @@ public class PIDRobotDrive extends RobotDrive implements PIDTunable {
     private SpeedController rCim1;
     private SpeedController rCim2;
     private Localizer localizer;
-    // PID constants
-    // these account for the wheels bearing a load
-    private double pMulti = 25;
-    private double iMulti = 29;//18;
-    private double dMulti = 20;
-    // pid values
-    private double Kp = 0.070 * pMulti;
-    private double Ki = 0.005 * iMulti;
-    private double Kd = 0.016 * dMulti;
-    private final double CAP = 5.0; // caps the amount of effect the pid can tweak the motor inputs
-    private double tSens = 1.5; // for cheesydrive
+    // pid values for drive speeds
+    private double Kp = PIDValues.VEL_CORRECT_P; //.070 * 25;
+    private double Ki = PIDValues.VEL_CORRECT_I; // 0.005 * 20;
+    private double Kd = PIDValues.VEL_CORRECT_D; //0.016 * 20;
+    private final double CAP = PIDValues.VEL_CORRECT_CAP; //5.0; // caps the amount of effect the pid can tweak the motor inputs
+
+    // for cheesydrive
+    // pid values for auto straight
+    private double rotP = PIDValues.HEADING_CORRECT_P; //0.05 * 185;
+    private double rotI = PIDValues.HEADING_CORRECT_I; //0.005 * 10;
+    private double rotD = PIDValues.HEADING_CORRECT_D; //0.05 * 15;
+    private double rotCap = PIDValues.HEADING_CORRECT_CAP; //0.3;
+    private double tSens = 1.5;
+    private PulseTriggerBoolean inStraightLockWindow;
+    private double straightHeading;
+    private ThreadlessPID headingController;
+
 
     public PIDRobotDrive(Localizer localizer,
             SpeedController lCim1, SpeedController lCim2, SpeedController rCim1,
@@ -51,8 +61,8 @@ public class PIDRobotDrive extends RobotDrive implements PIDTunable {
         rController = new ThreadlessPID(Kp, Ki, Kd);
         lController.setOutputRange(-CAP, CAP);
         rController.setOutputRange(-CAP, CAP);
-        lController.setSetpoint(0);
-        rController.setSetpoint(0);
+        headingController = new ThreadlessPID(rotP, rotI, rotD);
+        headingController.setOutputRange(-rotCap, rotCap);
 
     }
 
@@ -89,7 +99,7 @@ public class PIDRobotDrive extends RobotDrive implements PIDTunable {
         return val;
     }
 
-    public void tankDrive(GenericHID leftStick, GenericHID rightStick, boolean isHighGear) {
+    public void tankDrive(GenericHID leftStick, GenericHID rightStick, boolean isHighGear, boolean isReversed) {
 
         // put a deadband in the joystick
         double leftOut = -leftStick.getY();
@@ -97,11 +107,15 @@ public class PIDRobotDrive extends RobotDrive implements PIDTunable {
         double rightOut = -rightStick.getY();
         rightOut = (Math.abs(rightOut) < Constants.DRIVE_JOYSTICK_THRESH) ? 0 : rightOut;
 
-        this.tankDrive(leftOut, rightOut, isHighGear);
+        if(isReversed) {
+            tankDrive(-rightOut, -leftOut, isHighGear);
+        } else {
+            tankDrive(leftOut, rightOut, isHighGear);
+        }
     }
 
     public void tankDrive(GenericHID leftStick, GenericHID rightStick) {
-        tankDrive(leftStick, rightStick, true);
+        tankDrive(leftStick, rightStick, true, false);
     }
 
     public void tankDrive(double lVal, double rVal) {
@@ -114,9 +128,19 @@ public class PIDRobotDrive extends RobotDrive implements PIDTunable {
             double rightVel = rVal * Constants.HIGH_GEAR_SPEED;
             tankDriveAtVelocity(leftVel, rightVel);
         } else {
-            double leftVel = lVal * Constants.HIGH_GEAR_SPEED;
-            double rightVel = rVal * Constants.HIGH_GEAR_SPEED;
+            double leftVel = lVal * Constants.LOW_GEAR_SPEED;
+            double rightVel = rVal * Constants.LOW_GEAR_SPEED;
             tankDriveAtVelocity(leftVel, rightVel);
+        }
+    }
+
+    private void driveStraight(double throttle) {
+        double error = Angle.normalize(straightHeading - localizer.getTh());
+        double correction = headingController.calculate(error);
+        if (throttle >= 0) {
+            tankDrive(throttle - correction, throttle);
+        } else {
+            tankDrive(throttle, throttle + correction);
         }
     }
 
@@ -130,6 +154,18 @@ public class PIDRobotDrive extends RobotDrive implements PIDTunable {
         double sensitivity = tSens;
         double rPower = 0.0;
         double lPower = 0.0;
+
+        boolean straightLock = (Math.abs(wheel) < Constants.STRAIGHT_LOCK_THRESH);
+        inStraightLockWindow.set(straightLock);
+        
+        if(inStraightLockWindow.get()) {
+            straightHeading = localizer.getTh();
+            headingController.reset();
+        }
+
+        if(straightLock) {
+            driveStraight(throttle);
+        }
 
         if (quickTurn) {
             overPower = 1.0;
@@ -162,6 +198,10 @@ public class PIDRobotDrive extends RobotDrive implements PIDTunable {
 
     }
 
+    private boolean sameSign(double a, double b) {
+        return (a >= 0 && b >= 0 || a <= 0 && b <= 0);
+    }
+
     /**
      *
      * @param leftVel linear velocity of left wheels
@@ -182,9 +222,8 @@ public class PIDRobotDrive extends RobotDrive implements PIDTunable {
         double rTweaked = cap(rightOut + rightCorrection);
 
         // to avoid "seizure mode" don't allow the correction to change the sign of the output
-//        leftOut = sameSign(lTweaked, leftOut) ? lTweaked : 0;
-//        rightOut = sameSign(rTweaked, rightOut) ? rTweaked : 0;
-
+        leftOut = sameSign(lTweaked, leftOut) ? lTweaked : 0;
+        rightOut = sameSign(rTweaked, rightOut) ? rTweaked : 0;
 
         lCim1.set(leftOut);
         lCim2.set(leftOut);
