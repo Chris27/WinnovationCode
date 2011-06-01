@@ -17,9 +17,8 @@ import edu.wpi.first.wpilibj.RobotDrive;
 import edu.wpi.first.wpilibj.SmartDashboard;
 import edu.wpi.first.wpilibj.Solenoid;
 import edu.wpi.first.wpilibj.Timer;
-import edu.wpi.first.wpilibj.winnovation.motions.DriveToMotion;
+import edu.wpi.first.wpilibj.winnovation.motions.ArcToMotion;
 import edu.wpi.first.wpilibj.winnovation.motions.Motion;
-import edu.wpi.first.wpilibj.winnovation.motions.TurnToMotion;
 import edu.wpi.first.wpilibj.winnovation.utils.FixedGyro;
 import edu.wpi.first.wpilibj.winnovation.utils.LinearVictor;
 import edu.wpi.first.wpilibj.winnovation.utils.PIDTunable;
@@ -110,8 +109,8 @@ public class MyRobot extends IterativeRobot {
         localizer.reset();
 
         robotDrive = new PIDRobotDrive(localizer, lDriveCim1, lDriveCim2, rDriveCim1, rDriveCim2);
-        testMotion = new DriveToMotion(robotDrive, 0.50, localizer, 12.0, 0.0);
-        pidTuner = new PIDTuner(3, (PIDTunable) testMotion, 0.001, 0.001, 0.001, 27, 1, 10);
+        testMotion = new ArcToMotion(robotDrive, 0.80, localizer, 7.0, -3.0);
+        pidTuner = new PIDTuner(3, (PIDTunable) testMotion, 0.05, 0.005, 0.05, 40, 10, 0);
 
         gp = new Joystick(3);
         incTog = new PulseTriggerBoolean();
@@ -140,11 +139,11 @@ public class MyRobot extends IterativeRobot {
         decTog.set(gp.getRawButton(4));
 
         if (incTog.get()) {
-            Constants.WHEEL_BASE_WIDTH += 0.01;
+            Constants.WHEEL_BASE_WIDTH += 0.05;
             SmartDashboard.log(Constants.WHEEL_BASE_WIDTH, "wheel base width");
         }
         if (decTog.get()) {
-            Constants.WHEEL_BASE_WIDTH -= 0.01;
+            Constants.WHEEL_BASE_WIDTH -= 0.05;
             SmartDashboard.log(Constants.WHEEL_BASE_WIDTH, "wheel base width");
         }
 
@@ -152,8 +151,8 @@ public class MyRobot extends IterativeRobot {
         pidTuner.handle();
         if (pidTuner.reset()) {
             localizer.reset();
-            testMotion = new DriveToMotion(robotDrive, 0.50, localizer, 12.0, 0.0);
-            pidTuner = new PIDTuner(3, (PIDTunable) testMotion, 0.001, 0.001, 0.001, pidTuner.cp, pidTuner.ci, pidTuner.cd);
+            testMotion = new ArcToMotion(robotDrive, 0.80, localizer, 7.0, -3.0);
+            pidTuner = new PIDTuner(3, (PIDTunable) testMotion, 0.05, 0.005, 0.05, pidTuner.cp, pidTuner.ci, pidTuner.cd);
         }
 
         if (testMotion != null) {

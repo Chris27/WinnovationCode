@@ -58,14 +58,15 @@ public class Constants {
 
 
         // drive
-    public static final double MAX_DRIVE_SPEED = 13.0; // ft/s
+    public static final double HIGH_GEAR_SPEED = 13.0; // ft/s
+    public static final double LOW_GEAR_SPEED = 6.0; // ft/s // is this right?
     public static final double MIN_DRIVE_SPEED = 0.7; // ft/s
     public static final double LEFT_DRIVE_DIST_PER_PULSE = 0.0086528; // feet per encoder tick
     public static final double RIGHT_DRIVE_DIST_PER_PULSE = 0.0068988; // feet per encoder tick
     
 
     // dimensions
-    public static double WHEEL_BASE_WIDTH = 1.958;//23.50/12.0; // distance between the left and right wheels (ft)
+    public static double WHEEL_BASE_WIDTH = 28.0/12.0;//1.958;//23.50/12.0; // distance between the left and right wheels (ft)
 
     // Controls
     public static final Joystick.ButtonType LOBSTER_BUTTON = Joystick.ButtonType.kTrigger;

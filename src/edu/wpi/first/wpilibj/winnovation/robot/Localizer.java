@@ -37,6 +37,14 @@ public class Localizer {
         x = y = th = lDist = rDist = thVel = lVel = rVel = 0;
     }
 
+    public double getLDist() {
+        return lDist;
+    }
+
+    public double getRDist() {
+        return rDist;
+    }
+
 
     /**
      * The x axis is defined as the forward direction when this Localizer

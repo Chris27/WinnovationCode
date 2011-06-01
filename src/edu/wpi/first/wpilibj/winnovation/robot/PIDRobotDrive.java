@@ -34,6 +34,8 @@ public class PIDRobotDrive extends RobotDrive implements PIDTunable{
 
     private final double CAP = 5.0; // caps the amount of effect the pid can tweak the motor inputs
 
+    private double tSens = 1.5; // for cheesydrive
+
 
     public PIDRobotDrive(Localizer localizer,
             SpeedController lCim1, SpeedController lCim2, SpeedController rCim1,
@@ -49,9 +51,9 @@ public class PIDRobotDrive extends RobotDrive implements PIDTunable{
         lController = new ThreadlessPID(Kp, Ki, Kd);
         rController = new ThreadlessPID(Kp, Ki, Kd);
 
-        lController.setInputRange(-0.25*Constants.MAX_DRIVE_SPEED, 0.25*Constants.MAX_DRIVE_SPEED);
+        //lController.setInputRange(-0.25*Constants.MAX_DRIVE_SPEED, 0.25*Constants.MAX_DRIVE_SPEED);
         lController.setOutputRange(-CAP, CAP);
-        rController.setInputRange(-0.25*Constants.MAX_DRIVE_SPEED, 0.25*Constants.MAX_DRIVE_SPEED);
+        //rController.setInputRange(-0.25*Constants.MAX_DRIVE_SPEED, 0.25*Constants.MAX_DRIVE_SPEED);
         rController.setOutputRange(-CAP, CAP);
         lController.setSetpoint(0);
         rController.setSetpoint(0);
@@ -71,34 +73,73 @@ public class PIDRobotDrive extends RobotDrive implements PIDTunable{
     }
 
 
+    public void tankDrive(GenericHID leftStick, GenericHID rightStick, boolean isHighGear) {
+        this.tankDrive(-leftStick.getY(), -rightStick.getY(), isHighGear);
+    }
+    
     public void tankDrive(GenericHID leftStick, GenericHID rightStick) {
-
-        this.tankDrive(-leftStick.getY(), -rightStick.getY());
+        tankDrive(leftStick, rightStick, true);
     }
 
     public void tankDrive(double lVal, double rVal) {
-        double leftVel = lVal*Constants.MAX_DRIVE_SPEED;
-        double rightVel = rVal*Constants.MAX_DRIVE_SPEED;
-        tankDriveAtVelocity(leftVel, rightVel);
+        tankDrive(lVal, rVal, true);
     }
 
-    public void cheesyDrive(double power, double curv) {
-        cheesyDrive(power, curv, false);
+    public void tankDrive(double lVal, double rVal, boolean isHighGear) {
+        if (isHighGear) {
+            double leftVel = lVal*Constants.HIGH_GEAR_SPEED;
+            double rightVel = rVal*Constants.HIGH_GEAR_SPEED;
+            tankDriveAtVelocity(leftVel, rightVel);
+        } else {
+            double leftVel = lVal*Constants.HIGH_GEAR_SPEED;
+            double rightVel = rVal*Constants.HIGH_GEAR_SPEED;
+            tankDriveAtVelocity(leftVel, rightVel);
+        }
     }
 
-    public void cheesyDrive(double power, double curv, boolean quickTurn) {
-        curv = cap(curv);
-        power = cap(power);
+    public void cheesyDrive(double throttle, double wheel) {
+        cheesyDrive(throttle, wheel, false);
+    }
+
+    public void cheesyDrive(double throttle, double wheel, boolean quickTurn) {
+        double angular_power = 0.0;
+        double overPower = 0.0;
+        double sensitivity = tSens;
+        double rPower = 0.0;
+        double lPower = 0.0;
 
         if(quickTurn) {
-
-        } else {
-            double left = curv;
-            double right = 1 - curv;
-
-
-            // todo
+            overPower = 1.0;
+            sensitivity = 1.0;
+            angular_power = wheel;
         }
+        else {
+            overPower = 0.0;
+            angular_power = Math.abs(throttle) * wheel * sensitivity;
+        }
+
+        rPower = lPower = throttle;
+        lPower += angular_power;
+        rPower -= angular_power;
+
+        if(lPower > 1.0) {
+            rPower -= overPower * (lPower - 1.0);
+            lPower = 1.0;
+        }
+        else if(rPower > 1.0) {
+            lPower -= overPower * (rPower - 1.0);
+            rPower = 1.0;
+        }
+        else if(lPower < -1.0) {
+            rPower += overPower * (-1.0 - lPower);
+            lPower = -1.0;
+        }
+        else if(rPower < -1.0) {
+            lPower += overPower * (-1.0 - rPower);
+            rPower = -1.0;
+        }
+
+        tankDrive(lPower, rPower);
 
     }
 
@@ -109,25 +150,26 @@ public class PIDRobotDrive extends RobotDrive implements PIDTunable{
      */
     public void tankDriveAtVelocity(double leftVel, double rightVel) {
 
-        double leftOut = leftVel/Constants.MAX_DRIVE_SPEED;
-        double rightOut = -rightVel/Constants.MAX_DRIVE_SPEED;
+        double leftOut = leftVel/Constants.HIGH_GEAR_SPEED;
+        double rightOut = -rightVel/Constants.HIGH_GEAR_SPEED;
 
         double leftError = leftVel - localizer.getLVel();
         double rightError = rightVel - localizer.getRVel();
         double leftCorrection = lController.calculate(leftError)*Math.abs(leftOut);
         double rightCorrection = -rController.calculate(rightError)*Math.abs(rightOut);
 
-        // to avoid "seizure mode" don't allow the correction to change the sign of the output
+        
         double lTweaked = cap(leftOut + leftCorrection);
         double rTweaked = cap(rightOut + rightCorrection);
-        leftOut = sameSign(lTweaked, leftOut) ? lTweaked : 0;
-        rightOut = sameSign(rTweaked, rightOut) ? rTweaked : 0;
+          // to avoid "seizure mode" don't allow the correction to change the sign of the output
+//        leftOut = sameSign(lTweaked, leftOut) ? lTweaked : 0;
+//        rightOut = sameSign(rTweaked, rightOut) ? rTweaked : 0;
 
          // deadzone
-        if(Math.abs(leftVel) < Constants.MIN_DRIVE_SPEED)
-            leftOut = 0;
-        if(Math.abs(rightVel) < Constants.MIN_DRIVE_SPEED)
-            rightOut = 0;
+//        if(Math.abs(leftVel) < Constants.MIN_DRIVE_SPEED)
+//            leftOut = 0;
+//        if(Math.abs(rightVel) < Constants.MIN_DRIVE_SPEED)
+//            rightOut = 0;
 
         lCim1.set(leftOut);
         lCim2.set(leftOut);
