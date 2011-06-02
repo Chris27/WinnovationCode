@@ -1,7 +1,3 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 
 package edu.wpi.first.wpilibj.winnovation.autonomous;
 
@@ -15,6 +11,10 @@ import edu.wpi.first.wpilibj.winnovation.robot.Localizer;
 import edu.wpi.first.wpilibj.winnovation.motions.*;
 
 /**
+ * WORK IN PROGRESS...
+ *
+ * Autonomous mode that scores 1 tube on the middle high peg.  The robot should
+ * be positioned so it has a straight shot to the peg.
  *
  * @author Chris
  */

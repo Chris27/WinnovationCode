@@ -8,7 +8,9 @@ import edu.wpi.first.wpilibj.winnovation.utils.Angle;
 import edu.wpi.first.wpilibj.winnovation.utils.FixedGyro;
 
 /**
- * Keeps track of the position and velocity of the robot
+ * Keeps track of the position, orientation, and velocity of the robot.  Must call
+ * update() periodically.  If you lobster the drive train, call setLobsters() so
+ * it knows about the 90 degree shift in orientation
  *
  * @author Chris
  */

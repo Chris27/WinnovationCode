@@ -4,7 +4,8 @@ package edu.wpi.first.wpilibj.winnovation.config;
 import edu.wpi.first.wpilibj.Joystick;
 
 /**
- * Global constants and parameters should be stored here
+ * Global constants and parameters should be stored here rather then being hard
+ * coded
  *
  * @author Chris
  */
@@ -14,6 +15,7 @@ public class Constants {
     public static final boolean IS_PRACTICE_BOT = true;
     public static final boolean USE_GYRO = true;
     public static final boolean LOGGING_ENABLED = true;
+    public static final boolean DRIVE_STRAIGHT_LOCK_ENABLED = true;
 
     // intervals code runs at
     public static final double CONTINUOUS_INTERVAL = 0.01; // seconds

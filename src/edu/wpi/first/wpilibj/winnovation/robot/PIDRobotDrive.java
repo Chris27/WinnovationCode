@@ -14,7 +14,12 @@ import edu.wpi.first.wpilibj.winnovation.utils.PulseTriggerBoolean;
 import edu.wpi.first.wpilibj.winnovation.utils.ThreadlessPID;
 
 /**
- * Extends RobotDrive to accept velocity as input instead of power
+ * Extends RobotDrive to accept velocity as input instead of power.
+ * This also has the effect of making the motor outputs behave much more linearly
+ * and also allowing the robot to drive at slow speeds.  Cheesy drive is also
+ * implemented if you want to drive the robot with a steering wheel as opposed
+ * to a two joystick skid steer.  With cheesy drive, you can also enable the snap
+ * to straight feature to use a PID controller to help you drive in a straight line
  *
  * @author Chris
  */
@@ -33,7 +38,6 @@ public class PIDRobotDrive extends RobotDrive implements PIDTunable {
     private double Ki = PIDValues.VEL_CORRECT_I; // 0.005 * 20;
     private double Kd = PIDValues.VEL_CORRECT_D; //0.016 * 20;
     private final double CAP = PIDValues.VEL_CORRECT_CAP; //5.0; // caps the amount of effect the pid can tweak the motor inputs
-
     // for cheesydrive
     // pid values for auto straight
     private double rotP = PIDValues.HEADING_CORRECT_P; //0.05 * 185;
@@ -44,7 +48,6 @@ public class PIDRobotDrive extends RobotDrive implements PIDTunable {
     private PulseTriggerBoolean inStraightLockWindow;
     private double straightHeading;
     private ThreadlessPID headingController;
-
 
     public PIDRobotDrive(Localizer localizer,
             SpeedController lCim1, SpeedController lCim2, SpeedController rCim1,
@@ -107,7 +110,7 @@ public class PIDRobotDrive extends RobotDrive implements PIDTunable {
         double rightOut = -rightStick.getY();
         rightOut = (Math.abs(rightOut) < Constants.DRIVE_JOYSTICK_THRESH) ? 0 : rightOut;
 
-        if(isReversed) {
+        if (isReversed) {
             tankDrive(-rightOut, -leftOut, isHighGear);
         } else {
             tankDrive(leftOut, rightOut, isHighGear);
@@ -134,6 +137,7 @@ public class PIDRobotDrive extends RobotDrive implements PIDTunable {
         }
     }
 
+    // helper method to drive straight under cheesy drive
     private void driveStraight(double throttle) {
         double error = Angle.normalize(straightHeading - localizer.getTh());
         double correction = headingController.calculate(error);
@@ -155,18 +159,22 @@ public class PIDRobotDrive extends RobotDrive implements PIDTunable {
         double rPower = 0.0;
         double lPower = 0.0;
 
-        boolean straightLock = (Math.abs(wheel) < Constants.STRAIGHT_LOCK_THRESH);
-        inStraightLockWindow.set(straightLock);
-        
-        if(inStraightLockWindow.get()) {
-            straightHeading = localizer.getTh();
-            headingController.reset();
+        if (Constants.DRIVE_STRAIGHT_LOCK_ENABLED) {
+            boolean straightLock = (Math.abs(wheel) < Constants.STRAIGHT_LOCK_THRESH);
+            inStraightLockWindow.set(straightLock);
+
+            if (inStraightLockWindow.get()) {
+                straightHeading = localizer.getTh();
+                headingController.reset();
+            }
+
+            if (straightLock) {
+                driveStraight(throttle);
+                return;
+            }
         }
 
-        if(straightLock) {
-            driveStraight(throttle);
-        }
-
+        // quick turn allows for in place turning
         if (quickTurn) {
             overPower = 1.0;
             sensitivity = 1.0;
@@ -208,9 +216,15 @@ public class PIDRobotDrive extends RobotDrive implements PIDTunable {
      * @param rightVel linear velocity of right wheels
      */
     public void tankDriveAtVelocity(double leftVel, double rightVel) {
+        tankDriveAtVelocity(leftVel, rightVel, true);
+    }
 
-        double leftOut = leftVel / Constants.HIGH_GEAR_SPEED;
-        double rightOut = -rightVel / Constants.HIGH_GEAR_SPEED;
+    public void tankDriveAtVelocity(double leftVel, double rightVel, boolean isHighGear) {
+
+        // scale velocity with respect to the gearing of the robot
+        double scale = isHighGear ? Constants.HIGH_GEAR_SPEED : Constants.LOW_GEAR_SPEED;
+        double leftOut = leftVel / scale;
+        double rightOut = -rightVel / scale;
 
         double leftError = leftVel - localizer.getLVel();
         double rightError = rightVel - localizer.getRVel();

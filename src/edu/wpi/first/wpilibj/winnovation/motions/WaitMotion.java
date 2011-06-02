@@ -2,7 +2,7 @@
 package edu.wpi.first.wpilibj.winnovation.motions;
 
 /**
- * Wait for x seconds
+ * Motion that waits for x seconds
  *
  * @author Chris
  */

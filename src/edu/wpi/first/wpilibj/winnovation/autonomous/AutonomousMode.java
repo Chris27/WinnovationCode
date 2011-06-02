@@ -1,7 +1,3 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 
 package edu.wpi.first.wpilibj.winnovation.autonomous;
 
@@ -10,7 +6,11 @@ import edu.wpi.first.wpilibj.winnovation.motions.SynchronizeMotion;
 import java.util.Vector;
 
 /**
- *
+ * This abstract class contains the autonomous routine of processing motions
+ * in the driveMotions and auxMotions vectors (lists).  To create an autonomous
+ * mode, extend this class and add the motions you want to the lists in the 
+ * constructor
+ * 
  * @author Chris
  */
 public abstract class AutonomousMode {

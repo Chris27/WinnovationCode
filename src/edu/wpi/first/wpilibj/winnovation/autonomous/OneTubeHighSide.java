@@ -1,11 +1,11 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 
 package edu.wpi.first.wpilibj.winnovation.autonomous;
 
 /**
+ * TO BE IMPLEMENTED
+ *
+ * Same as OneTubeMidHigh but scores on either the triangle or square peg on the
+ * high row (depending on how the robot is positioned)
  *
  * @author Chris
  */
