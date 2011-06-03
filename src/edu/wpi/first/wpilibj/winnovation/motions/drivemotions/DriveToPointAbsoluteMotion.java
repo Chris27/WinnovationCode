@@ -63,8 +63,4 @@ public class DriveToPointAbsoluteMotion implements Motion {
         motion.abort();
     }
 
-
-
-
-
 }

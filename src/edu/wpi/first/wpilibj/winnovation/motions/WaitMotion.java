@@ -1,6 +1,8 @@
 
 package edu.wpi.first.wpilibj.winnovation.motions;
 
+import edu.wpi.first.wpilibj.Timer;
+
 /**
  * Motion that waits for x seconds
  *
@@ -8,24 +10,27 @@ package edu.wpi.first.wpilibj.winnovation.motions;
  */
 public class WaitMotion implements Motion{
 
-    private long startTime = -1;
-    private long waitTime;
+    private double startTime = -1;
+    private double waitTime;
     private boolean aborted;
+    private boolean started = false;
 
     public WaitMotion(double seconds) {
         aborted = (seconds <= 0);
-        waitTime = (long) (1000*seconds);
+        waitTime = seconds;
     }
 
     public boolean isDone() {
-        return aborted || (startTime >= 0 && System.currentTimeMillis() >= startTime + waitTime);
+        return aborted || (started && Timer.getFPGATimestamp() >= startTime + waitTime);
     }
 
 
     public void doMotion() {
         // dont't start the clock until first call to doMotion();
-        if(startTime < 0)
-            startTime = System.currentTimeMillis();
+        if(!started) {
+            started = true;
+            startTime = Timer.getFPGATimestamp();
+        }
     }
 
     public void abort() {

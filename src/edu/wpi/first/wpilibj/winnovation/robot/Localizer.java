@@ -4,6 +4,7 @@ import edu.wpi.first.wpilibj.winnovation.config.Constants;
 import edu.wpi.first.wpilibj.Encoder;
 import edu.wpi.first.wpilibj.Gyro;
 import edu.wpi.first.wpilibj.SmartDashboard;
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.winnovation.utils.Angle;
 import edu.wpi.first.wpilibj.winnovation.utils.FixedGyro;
 
@@ -28,7 +29,7 @@ public class Localizer {
     private double thVel; //rad/sec
     private double lVel;  // ft/s
     private double rVel;  // ft/s
-    private long time;
+    private double time; // seconds
 
     private boolean lobstered = false;
 
@@ -36,7 +37,7 @@ public class Localizer {
         this.gyro = gyro;
         this.lEncoder = lEncoder;
         this.rEncoder = rEncoder;
-        time = System.currentTimeMillis();
+        time = Timer.getFPGATimestamp();//System.currentTimeMillis();
         x = y = th = lDist = rDist = thVel = lVel = rVel = 0;
     }
 
@@ -47,6 +48,10 @@ public class Localizer {
                     Constants.LEFT_DRIVE_ENCODER_B_CH, true, Encoder.EncodingType.k1X);
             Encoder rEncoder = new Encoder(Constants.RIGHT_DRIVE_ENCODER_A_CH,
                     Constants.RIGHT_DRIVE_ENCODER_B_CH, true, Encoder.EncodingType.k1X);
+            lEncoder.setDistancePerPulse(Constants.LEFT_DRIVE_DIST_PER_PULSE);
+            rEncoder.setDistancePerPulse(Constants.RIGHT_DRIVE_DIST_PER_PULSE);
+            lEncoder.start();
+            rEncoder.start();
             instance = new Localizer(gyro, lEncoder, rEncoder);
         }
         return instance;
@@ -137,12 +142,11 @@ public class Localizer {
      * Updates the position of the robot.  This method should be called
      * regularly and frequently for best accuracy
      *
-     * @param isLobstered
      */
     public synchronized void update() {
 
-        long curTime = System.currentTimeMillis();
-        double delT = ((double) (curTime - time)) / 1000.0; // seconds since last update()
+        double curTime = Timer.getFPGATimestamp();//System.currentTimeMillis();
+        double delT = curTime - time; //((double) (curTime - time)) / 1000.0; // seconds since last update()
 
         // update current velocities
         lVel = (lEncoder.getDistance() - lDist) / delT; // because encoder getRate() seems to be broken...
@@ -184,14 +188,14 @@ public class Localizer {
 
         // log stuff
         if (Constants.LOGGING_ENABLED) {
-            //SmartDashboard.log(lEncoder.getDistance(), "lEncoder (ft)");
-            //SmartDashboard.log(rEncoder.getDistance(), "rEncoder (ft)");
+            SmartDashboard.log(lEncoder.getDistance(), "lEncoder (ft)");
+            SmartDashboard.log(rEncoder.getDistance(), "rEncoder (ft)");
             SmartDashboard.log(lVel, "lVel (ft/s)");
             SmartDashboard.log(rVel, "rVel (ft/s)");
-            //SmartDashboard.log(gyro.getAngle(), "gyro");
+            SmartDashboard.log(gyro.getAngle(), "gyro");
             SmartDashboard.log(x, "x (ft)");
             SmartDashboard.log(y, "y (ft)");
-            SmartDashboard.log(Angle.normalizeDeg(th * 180.0 / Math.PI), "heading (deg)");
+            SmartDashboard.log(Angle.normalizeDeg(th * 180.0 / Math.PI), "heading (degrees)");
             //SmartDashboard.log(v, "lin speed (ft/s)");
             //SmartDashboard.log(w*180.0/Math.PI, "rot speed (deg/s)");
             //SmartDashboard.log(delT, "delT");
@@ -199,16 +203,16 @@ public class Localizer {
     }
 
     public synchronized void reset() {
-        lEncoder.reset();
-        rEncoder.reset();
-        gyro.reset();
-        x = 0;
-        y = 0;
-        th = 0;
-        lDist = 0;
-        rDist = 0;
-        lVel = 0;
-        rVel = 0;
-        thVel = 0;
+//        lEncoder.reset();
+//        rEncoder.reset();
+//        gyro.reset();
+//        x = 0;
+//        y = 0;
+//        th = 0;
+//        lDist = 0;
+//        rDist = 0;
+//        lVel = 0;
+//        rVel = 0;
+//        thVel = 0;
     }
 }

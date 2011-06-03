@@ -13,6 +13,8 @@ import edu.wpi.first.wpilibj.winnovation.controls.DriverControl;
 /**
  * The main robot routine.  Everything starts here.  You shouldn't need to modify
  * this file much as to keep the code organized, you should implement stuff elsewhere
+ *
+ * @author Chris
  */
 public class MyRobot extends IterativeRobot {
 
