@@ -33,7 +33,8 @@ public class AutonomousSelector {
     public AutonomousMode getAutonomousMode() {
         // should look at the switches and select the appropriate autonomous mode
 
-        return new DoNothing();
+        //return new DoNothing();
+        return new SquareMode();
     }
 
 }
